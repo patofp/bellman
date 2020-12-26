@@ -5,4 +5,5 @@ final case class Triple(s:String, p:String, o:String) extends Expr
 final case class LeftJoin(l:Expr, r:Expr) extends Expr
 final case class Union(l:Expr, r:Expr) extends Expr
 final case class Extend(bindTo:String, bindFrom:String, r:Expr) extends Expr
-final case class Filter(func:String, left:String, right:String)
+final case class FilterFunction(func:String, left:String, right:String) extends Expr
+final case class Filter(funcs:Seq[FilterFunction], expr:Expr) extends Expr

@@ -95,7 +95,19 @@ class ParserSpec extends AnyFlatSpec {
     }
   }
 
-  "Filter over simple BGP" should "Result in correct nesting of filter" in {
-    println(sparql2Algebra("/queries/q8-filter-simple-basic-graph.sparql"))
+  "Filter over simple BGP" should "Result in correct nesting of filter and BGP" in {
+    val p = fastparse.parse(sparql2Algebra("/queries/q8-filter-simple-basic-graph.sparql"), Parser.parser(_))
+    p.get.value match {
+      case Filter(s1:Seq[FilterFunction], b:BGP) => succeed
+      case _ => fail
+    }
+  }
+
+  "Multiple filters over simple BGP" should "Result in correct nesting of filters and BGP" in {
+    val p = fastparse.parse(sparql2Algebra("/queries/q9-double-filter-simple-basic-graph.sparql"), Parser.parser(_))
+    p.get.value match {
+      case Filter(s1:Seq[FilterFunction], b:BGP) => succeed
+      case _ => fail
+    }
   }
 }
