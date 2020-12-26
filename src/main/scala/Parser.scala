@@ -32,11 +32,9 @@ object Parser {
       p => Filter(List(p._1), p._2)
     }
 
-  //TODO: Figure out why this isn't parsing properly
   def graphPattern[_:P]:P[Expr] = P(leftJoinParen | bgpParen | unionParen | extendParen | filterSingleParen | filterListParen)
   def bgpParen[_:P]:P[BGP] = P("(" ~ bgp ~ triple.rep(1) ~ ")").map(BGP(_))
 
-  //TODO: Test leftJoinParen by changing bgpParen to graphPattern
   def leftJoinParen[_:P]:P[LeftJoin] = P("(" ~ leftJoin ~ graphPattern ~ bgpParen ~ ")").map{
     lj => LeftJoin(lj._1, lj._2)
   }
