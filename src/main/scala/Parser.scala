@@ -35,7 +35,7 @@ object Parser {
   def graphPattern[_:P]:P[Expr] = P(leftJoinParen | bgpParen | unionParen | extendParen | filterSingleParen | filterListParen)
   def bgpParen[_:P]:P[BGP] = P("(" ~ bgp ~ triple.rep(1) ~ ")").map(BGP(_))
 
-  def leftJoinParen[_:P]:P[LeftJoin] = P("(" ~ leftJoin ~ graphPattern ~ bgpParen ~ ")").map{
+  def leftJoinParen[_:P]:P[LeftJoin] = P("(" ~ leftJoin ~ graphPattern ~ graphPattern ~ ")").map{
     lj => LeftJoin(lj._1, lj._2)
   }
 
