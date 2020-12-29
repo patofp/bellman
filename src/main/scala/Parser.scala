@@ -7,6 +7,8 @@ object Parser {
   def extend[_:P] = P("extend")
   def filter[_:P] = P("filter")
   def exprList[_:P] = P("exprlist")
+  def join[_:P] = P("join")
+  def graph[_:P] = P("graph")
 
   def triple[_:P] =
     P("(triple" ~
@@ -32,7 +34,16 @@ object Parser {
       p => Filter(List(p._1), p._2)
     }
 
-  def graphPattern[_:P]:P[Expr] = P(leftJoinParen | bgpParen | unionParen | extendParen | filterSingleParen | filterListParen)
+  def graphPattern[_:P]:P[Expr] =
+    P(leftJoinParen
+      | joinParen
+      | graphParen
+      | bgpParen
+      | unionParen
+      | extendParen
+      | filterSingleParen
+      | filterListParen)
+
   def bgpParen[_:P]:P[BGP] = P("(" ~ bgp ~ triple.rep(1) ~ ")").map(BGP(_))
 
   def leftJoinParen[_:P]:P[LeftJoin] = P("(" ~ leftJoin ~ graphPattern ~ graphPattern ~ ")").map{
@@ -48,5 +59,14 @@ object Parser {
     graphPattern ~ ")").map{
     ext => Extend(ext._1, ext._2, ext._3)
   }
+
+  def joinParen[_:P]:P[Join] = P("(" ~ join ~ graphPattern ~ graphPattern ~ ")").map{
+    p => Join(p._1, p._2)
+  }
+
+  def graphParen[_:P]:P[Graph] = P("(" ~ graph ~ CharsWhile(_ != ' ').! ~ graphPattern ~ ")").map{
+    p => Graph(p._1, p._2)
+  }
+
   def parser[_:P]:P[Expr] = P(graphPattern)
 }

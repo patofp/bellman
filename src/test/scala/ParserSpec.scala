@@ -112,7 +112,6 @@ class ParserSpec extends AnyFlatSpec {
   }
 
   "Complex filters" should "Result in the correct nesting" in {
-    println(sparql2Algebra("/queries/q10-complex-filter.sparql"))
     val p  = fastparse.parse(sparql2Algebra("/queries/q10-complex-filter.sparql"), Parser.parser(_))
     p.get.value match {
       case Filter(
@@ -134,5 +133,11 @@ class ParserSpec extends AnyFlatSpec {
                     BGP(seq8:Seq[Triple]))))) => succeed
       case _ => fail
     }
+  }
+
+  "Simple named graph query" should "Return correct named graph algebra" in {
+    println(sparql2Algebra("/queries/q11-simple-graph.sparql"))
+    val p = fastparse.parse(sparql2Algebra("/queries/q11-simple-graph.sparql"), Parser.parser(_))
+    println(p)
   }
 }
