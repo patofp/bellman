@@ -136,8 +136,20 @@ class ParserSpec extends AnyFlatSpec {
   }
 
   "Simple named graph query" should "Return correct named graph algebra" in {
-    println(sparql2Algebra("/queries/q11-simple-graph.sparql"))
-    val p = fastparse.parse(sparql2Algebra("/queries/q11-simple-graph.sparql"), Parser.parser(_))
-    println(p)
+    println(sparql2Algebra("/queries/q11-simple-named-graph.sparql"))
+    val p = fastparse.parse(sparql2Algebra("/queries/q11-simple-named-graph.sparql"), Parser.parser(_))
+    p.get.value match {
+      case Join(Graph(ng1:String, BGP(s1:Seq[Triple])), BGP(s2:Seq[Triple])) => succeed
+      case _ => fail
+    }
+  }
+
+  "Double named graph query" should "Return correct named graph algebra" in {
+    println(sparql2Algebra("/queries/q11-simple-named-graph.sparql"))
+    val p = fastparse.parse(sparql2Algebra("/queries/q12-double-named-graph.sparql"), Parser.parser(_))
+    p.get.value match {
+      case Join(Graph(ng1:String, BGP(s1:Seq[Triple])), Graph(ng2:String, BGP(s2:Seq[Triple]))) => succeed
+      case _ => fail
+    }
   }
 }
