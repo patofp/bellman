@@ -150,5 +150,30 @@ class ParserSpec extends AnyFlatSpec {
       case _ => fail
     }
   }
-  //TODO: add tests for more complex named graph queries
+
+  "Complex named graph query" should "Return correct named graph algebra" in {
+    val p = fastparse.parse(sparql2Algebra("/queries/q13-complex-named-graph.sparql"), Parser.parser(_))
+
+    p.get.value match {
+      case Filter(
+        seq1:Seq[FilterFunction],
+        Union(
+          Union(
+            Graph(g1:String,
+            Filter(
+              seq2:Seq[FilterFunction],
+              Extend(s1:String, s2:String,
+                LeftJoin(
+                  LeftJoin(
+                    BGP(seq3:Seq[Triple]),
+                    BGP(seq4:Seq[Triple])),
+                BGP(seq5:Seq[Triple]))))),
+              BGP(seq6:Seq[Triple])),
+          Extend(s3:String, s4:String,
+            LeftJoin(
+              BGP(seq7:Seq[Triple]),
+              BGP(seq8:Seq[Triple]))))) => succeed
+      case _ => fail
+    }
+  }
 }
