@@ -43,8 +43,10 @@ WHERE
 
     UNION
     {
-      ?lnk sn:STY1 ?c1 .
-      ?lnk sn:RL ?rel .
+      GRAPH <http://id.gsk.com/dm/1.0/graph1> {
+        ?lnk sn:STY1 ?c1 .
+        ?lnk sn:RL ?rel .
+      }
       ?rel sn:STY_RL ?relstr .
       ?lnk sn:STY2 ?c2 .
       OPTIONAL {?wfh a ?fiuwh}
