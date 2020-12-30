@@ -25,7 +25,8 @@ class ParserSpec extends AnyFlatSpec {
     val p = fastparse.parse(sparql2Algebra("/queries/q1-single-leftjoin.sparql"), Parser.parser(_))
     p.get.value match {
       case LeftJoin(l:BGP, r:BGP) => succeed
-      case LeftJoin(l:LeftJoin, r:BGP) => fail
+      case _ => fail
+
     }
   }
 
@@ -33,7 +34,7 @@ class ParserSpec extends AnyFlatSpec {
     val p = fastparse.parse(sparql2Algebra("/queries/q2-nested-leftjoins.sparql"), Parser.parser(_))
     p.get.value match {
       case LeftJoin(l: LeftJoin, r: BGP) => succeed
-      case LeftJoin(l: BGP, r: BGP) => fail
+      case _ => fail
     }
   }
 
