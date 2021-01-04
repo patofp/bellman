@@ -1,6 +1,9 @@
 import fastparse._, MultiLineWhitespace._
 
-object Parser {
+object ExprParser {
+  /*
+  Graph patterns
+   */
   def bgp[_:P]:P[Unit] = P("bgp")
   def leftJoin[_:P]:P[Unit] = P("leftjoin")
   def union[_:P]:P[Unit] = P("union")
