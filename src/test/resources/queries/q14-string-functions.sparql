@@ -20,5 +20,5 @@ WHERE
 {
   ?d a dm:Document .
   ?d dm:docSource ?src .
-  BIND(URI("http://id.gsk.com/dm/1.0/") as ?dbind) .
+  BIND(URI(CONCAT("http://id.gsk.com/dm/1.0/", ?src)) as ?dbind) .
 }
