@@ -35,6 +35,7 @@ class StringFuncParserSpec extends AnyFlatSpec {
     val p = fastparse.parse(s, StringFuncParser.parser(_))
     p.get.value match {
       case URI(CONCAT(STRING("http://id.gsk.com/dm/1.0/"), VARIABLE("?src"))) => succeed
+      case _ => fail
     }
   }
 }

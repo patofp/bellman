@@ -15,9 +15,11 @@ object ExprParser {
 
   def triple[_:P]:P[Triple] =
     P("(triple" ~
-      CharsWhile(_ != ' ').! ~
-      CharsWhile(_ != ' ').! ~
-      CharsWhile(_ != ')').! ~ ")").map(t => Triple(t._1, t._2, t._3))
+      StringValParser.tripleValParser ~
+      StringValParser.tripleValParser ~
+      StringValParser.tripleValParser ~ ")").map(t => Triple(t._1, t._2, t._3))
+
+  def bgpParen[_:P]:P[BGP] = P("(" ~ bgp ~ triple.rep(1) ~ ")").map(BGP(_))
 
   def filterFunction[_:P]:P[FilterFunction] =
     P("(" ~ CharsWhile(_ != ' ').! ~ CharsWhile(_ != ' ').! ~ CharsWhile(_ != ')').! ~ ")").map {
@@ -37,8 +39,6 @@ object ExprParser {
       p => Filter(List(p._1), p._2)
     }
 
-  def bgpParen[_:P]:P[BGP] = P("(" ~ bgp ~ triple.rep(1) ~ ")").map(BGP(_))
-
   def leftJoinParen[_:P]:P[LeftJoin] = P("(" ~ leftJoin ~ graphPattern ~ graphPattern ~ ")").map{
     lj => LeftJoin(lj._1, lj._2)
   }
@@ -47,8 +47,8 @@ object ExprParser {
     u => Union(u._1, u._2)
   }
   def extendParen[_:P]:P[Extend] = P("(" ~
-    extend ~ "((" ~ CharsWhile(_ != ' ').! ~
-    CharsWhile(_ != ')').! ~ "))" ~
+    extend ~ "((" ~ StringValParser.tripleValParser ~
+    StringValParser.tripleValParser ~ "))" ~
     graphPattern ~ ")").map{
     ext => Extend(ext._1, ext._2, ext._3)
   }
@@ -57,7 +57,7 @@ object ExprParser {
     p => Join(p._1, p._2)
   }
 
-  def graphParen[_:P]:P[Graph] = P("(" ~ graph ~ CharsWhile(_ != ' ').! ~ graphPattern ~ ")").map{
+  def graphParen[_:P]:P[Graph] = P("(" ~ graph ~ StringValParser.urival ~ graphPattern ~ ")").map{
     p => Graph(p._1, p._2)
   }
 
