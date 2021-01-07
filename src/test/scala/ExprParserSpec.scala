@@ -1,5 +1,7 @@
+import fastparse.Parsed
 import org.apache.jena.query.QueryFactory
 import org.apache.jena.sparql.algebra.Algebra
+
 import scala.io.Source
 import org.scalatest.flatspec.AnyFlatSpec
 
@@ -40,7 +42,7 @@ class ExprParserSpec extends AnyFlatSpec {
   "Single Bind" should "result in a successful extend instruction" in {
     val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/q4-simple-bind.sparql"), ExprParser.parser(_))
     p.get.value match {
-      case Extend(l:String, r:String, BGP(triples:Seq[Triple])) => succeed
+      case Extend(l:StringVal, r:StringVal, BGP(triples:Seq[Triple])) => succeed
       case _ => fail
     }
   }
@@ -48,7 +50,7 @@ class ExprParserSpec extends AnyFlatSpec {
   "Single union plus bind" should "result in a successful extend and union instruction" in {
     val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/q5-union-plus-bind.sparql"), ExprParser.parser(_))
     p.get.value match {
-      case Union(Extend(l:String, r:String, BGP(triples1:Seq[Triple])), BGP(triples2:Seq[Triple])) => succeed
+      case Union(Extend(l:StringVal, r:StringVal, BGP(triples1:Seq[Triple])), BGP(triples2:Seq[Triple])) => succeed
       case _ => fail
     }
   }
@@ -61,14 +63,14 @@ class ExprParserSpec extends AnyFlatSpec {
       case
         Union(
           Union(
-            Extend(s1:String,s2:String,
+            Extend(s1:StringVal,s2:StringVal,
               LeftJoin(
                 LeftJoin(
                   BGP(l1:Seq[Triple]),
                   BGP(l2:Seq[Triple])),
                 BGP(l3:Seq[Triple]))),
               BGP(l4:Seq[Triple])),
-            Extend(s3:String,s4:String,
+            Extend(s3:StringVal,s4:StringVal,
               LeftJoin(
                 BGP(l5:Seq[Triple]),
                 BGP(l6:Seq[Triple]))))
@@ -81,8 +83,8 @@ class ExprParserSpec extends AnyFlatSpec {
     val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/q7-nested-bind.sparql"), ExprParser.parser(_))
     p.get.value match {
       case
-        Extend(s1:String, s2:String,
-          Extend(s3:String, s4:String,
+        Extend(s1:StringVal, s2:StringVal,
+          Extend(s3:StringVal, s4:StringVal,
             BGP(l1:Seq[Triple]))) => succeed
       case _ => fail
     }
@@ -113,14 +115,14 @@ class ExprParserSpec extends AnyFlatSpec {
                 Union(
                   Filter(
                     seq2:Seq[FilterFunction],
-                    Extend(s1:String, s2:String,
+                    Extend(s1:StringVal, s2:StringVal,
                       LeftJoin(
                         LeftJoin(
                           BGP(seq3:Seq[Triple]),
                           BGP(seq4:Seq[Triple])),
                       BGP(seq5:Seq[Triple])))),
                     BGP(seq6:Seq[Triple])),
-                Extend(s3:String, s4:String,
+                Extend(s3:StringVal, s4:StringVal,
                   LeftJoin(
                     BGP(seq7:Seq[Triple]),
                     BGP(seq8:Seq[Triple]))))) => succeed
@@ -131,7 +133,7 @@ class ExprParserSpec extends AnyFlatSpec {
   "Simple named graph query" should "Return correct named graph algebra" in {
     val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/q11-simple-named-graph.sparql"), ExprParser.parser(_))
     p.get.value match {
-      case Join(Graph(ng1:String, BGP(s1:Seq[Triple])), BGP(s2:Seq[Triple])) => succeed
+      case Join(Graph(ng1:URIVAL, BGP(s1:Seq[Triple])), BGP(s2:Seq[Triple])) => succeed
       case _ => fail
     }
   }
@@ -139,7 +141,7 @@ class ExprParserSpec extends AnyFlatSpec {
   "Double named graph query" should "Return correct named graph algebra" in {
     val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/q12-double-named-graph.sparql"), ExprParser.parser(_))
     p.get.value match {
-      case Join(Graph(ng1:String, BGP(s1:Seq[Triple])), Graph(ng2:String, BGP(s2:Seq[Triple]))) => succeed
+      case Join(Graph(ng1:URIVAL, BGP(s1:Seq[Triple])), Graph(ng2:URIVAL, BGP(s2:Seq[Triple]))) => succeed
       case _ => fail
     }
   }
@@ -151,20 +153,20 @@ class ExprParserSpec extends AnyFlatSpec {
         seq1:Seq[FilterFunction],
         Union(
           Union(
-            Graph(g1:String,
+            Graph(g1:URIVAL,
             Filter(
               seq2:Seq[FilterFunction],
-              Extend(s1:String, s2:String,
+              Extend(s1:StringVal, s2:StringVal,
                 LeftJoin(
                   LeftJoin(
                     BGP(seq3:Seq[Triple]),
                     BGP(seq4:Seq[Triple])),
                 BGP(seq5:Seq[Triple]))))),
               BGP(seq6:Seq[Triple])),
-          Extend(s3:String, s4:String,
+          Extend(s3:StringVal, s4:StringVal,
           LeftJoin(
           Join(
-                Graph(g2:String, BGP(seq7:Seq[Triple])),
+                Graph(g2:URIVAL, BGP(seq7:Seq[Triple])),
                 BGP(seq8:Seq[Triple])),
               BGP(seq9:Seq[Triple]))))) => succeed
       case _ => fail
