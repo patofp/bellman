@@ -172,4 +172,5 @@ class ExprParserSpec extends AnyFlatSpec {
       case _ => fail
     }
   }
+  //TODO add complex query with complex nested string functions
 }

@@ -38,4 +38,30 @@ class StringFuncParserSpec extends AnyFlatSpec {
       case _ => fail
     }
   }
+
+  "str function" should "return STR type" in {
+    val s = "(str ?d)"
+    val p = fastparse.parse(s, StringFuncParser.parser(_))
+    p.get.value match {
+      case STR(i:StringLike) => succeed
+      case _ => fail
+    }
+  }
+
+  "strafter function" should "return STRAFTER type" in {
+    val s = "(strafter ( str ?d) \"#\")"
+    val p = fastparse.parse(s, StringFuncParser.parser(_))
+    p.get.value match {
+      case STRAFTER(STR(VARIABLE(s1:String)), STRING(s2:String)) => succeed
+    }
+  }
+
+  "Deeply nested strafter function" should "return nested STRAFTER type" in {
+    val s = "(uri (strafter (concat (str ?d) (str ?src)) \"#\"))"
+    val p = fastparse.parse(s, StringFuncParser.parser(_))
+    p.get.value match {
+      case URI(STRAFTER(CONCAT(STR(VARIABLE(a1: String)), STR(VARIABLE(a2: String))), STRING("#"))) => succeed
+      case _ => fail
+    }
+  }
 }
