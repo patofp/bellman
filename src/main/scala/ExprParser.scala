@@ -47,8 +47,8 @@ object ExprParser {
     u => Union(u._1, u._2)
   }
   def extendParen[_:P]:P[Extend] = P("(" ~
-    extend ~ "((" ~ StringValParser.tripleValParser ~
-    StringValParser.tripleValParser ~ "))" ~
+    extend ~ "((" ~ (StringValParser.tripleValParser | StringFuncParser.parser) ~
+    (StringValParser.tripleValParser | StringFuncParser.parser) ~ "))" ~
     graphPattern ~ ")").map{
     ext => Extend(ext._1, ext._2, ext._3)
   }

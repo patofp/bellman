@@ -172,5 +172,23 @@ class ExprParserSpec extends AnyFlatSpec {
       case _ => fail
     }
   }
+
+  "Simple nested string function query" should "return proper nested type" in {
+    val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/q15-strafter-simple.sparql"), ExprParser.parser(_))
+    p.get.value match {
+      case Extend(
+        VARIABLE(s1:String),
+        URI(
+          STRAFTER(
+            CONCAT(
+              STR(VARIABLE(s2:String)),
+              STR(VARIABLE(s3:String))),
+            STRING("#"))),
+        BGP(l1:Seq[Triple])) => succeed
+      case _ => fail
+
+    }
+  }
+
   //TODO add complex query with complex nested string functions
 }
