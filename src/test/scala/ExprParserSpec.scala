@@ -1,8 +1,3 @@
-import fastparse.Parsed
-import org.apache.jena.query.QueryFactory
-import org.apache.jena.sparql.algebra.Algebra
-
-import scala.io.Source
 import org.scalatest.flatspec.AnyFlatSpec
 
 class ExprParserSpec extends AnyFlatSpec {
@@ -20,7 +15,6 @@ class ExprParserSpec extends AnyFlatSpec {
     p.get.value match {
       case LeftJoin(l:BGP, r:BGP) => succeed
       case _ => fail
-
     }
   }
 
@@ -174,7 +168,7 @@ class ExprParserSpec extends AnyFlatSpec {
   }
 
   "Simple nested string function query" should "return proper nested type" in {
-    val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/q15-strafter-simple.sparql"), ExprParser.parser(_))
+    val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/q15-string-functions-nested.sparql"), ExprParser.parser(_))
     p.get.value match {
       case Extend(
         VARIABLE(s1:String),
@@ -190,5 +184,14 @@ class ExprParserSpec extends AnyFlatSpec {
     }
   }
 
-  //TODO add complex query with complex nested string functions
+  /*Assertions are beginning to get complex. The asssumption that previous tests appropriately exercise the parser
+  combinator functions
+   */
+  "Complex nested string function query" should "return proper nested type" in {
+    val p = fastparse.parse(TestUtils.sparql2Algebra("queries/q16-string-functions-nested-complex.sparql"), ExprParser.parser(_))
+    val output = TestUtils.readOutputFile("queries/output/q16-output.sparql")
+
+    println(output)
+    assert(output == p.get.value.toString)
+  }
 }
