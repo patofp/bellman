@@ -1,0 +1,57 @@
+PREFIX  schema: <http://schema.org/>
+PREFIX  rdf:  <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX  xml:  <http://www.w3.org/XML/1998/namespace>
+PREFIX  xsd:  <http://www.w3.org/2001/XMLSchema#>
+PREFIX  dm:   <http://id.gsk.com/dm/1.0/>
+PREFIX  prism: <http://prismstandard.org/namespaces/basic/2.0/>
+PREFIX  litg:  <http://lit-search-api/graph/>
+PREFIX  litc:  <http://lit-search-api/class/>
+PREFIX  litn:  <http://lit-search-api/node/>
+PREFIX  litp:  <http://lit-search-api/property/>
+PREFIX  lita:  <http://lit-search-api/attribute/>
+PREFIX  sn: <http://id.gsk.com/semanticnetwork/>
+
+CONSTRUCT
+{
+    ?c1 ?rel ?c2 .
+    ?rel litp:name ?relstr .
+}
+WHERE
+{
+    {
+      {
+        GRAPH <http://id.gsk.com/dm/1.0/graph1> {
+          ?lnk sn:STY_RL1 ?c1 .
+          ?lnk sn:RL ?rel .
+          ?rel sn:STY_RL ?relstr .
+          ?lnk sn:STY_RL2 ?c2 .
+          OPTIONAL { ?b dm:confidence ?conf }
+          OPTIONAL { ?c dm:test ?afh }
+          BIND(?lnk as ?link)
+          FILTER(?rel = "test1")
+          FILTER(?lnk = "test2")
+        }
+      }
+      UNION
+      {
+        ?lnk sn:STY1 ?c1 .
+        ?lnk sn:RL ?rel .
+        ?rel sn:STY_RL ?relstr .
+        ?lnk sn:STY2 ?c2 .
+        BIND(URI(STRAFTER(CONCAT(str(?lnk), str(?rel)), "#")) as ?detObj) .
+      }
+    }
+
+    UNION
+    {
+      GRAPH <http://id.gsk.com/dm/1.0/graph1> {
+        ?lnk sn:STY1 ?c1 .
+        ?lnk sn:RL ?rel .
+      }
+      ?rel sn:STY_RL ?relstr .
+      ?lnk sn:STY2 ?c2 .
+      OPTIONAL {?wfh a ?fiuwh}
+      BIND(?wfh as ?ogihw)
+    }
+    FILTER(?lnk = "test3")
+}

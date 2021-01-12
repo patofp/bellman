@@ -13,4 +13,9 @@ object TestUtils {
     Algebra.compile(query).toString
   }
 
+  def readOutputFile(fileLoc:String):String = {
+    val path = getClass.getResource(fileLoc).getPath
+    Source.fromFile(path).mkString
+  }
+
 }
