@@ -12,6 +12,3 @@ sealed trait StringVal extends StringLike
 final case class STRING(s:String) extends StringVal
 final case class VARIABLE(v:String) extends StringVal
 final case class URIVAL(u:String) extends StringVal
-
-
-

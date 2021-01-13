@@ -1,4 +1,4 @@
-name := "bellman-poc"
+name := "bellman-algebra-parser"
 
 version := "0.1"
 
