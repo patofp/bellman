@@ -21,13 +21,13 @@ object ExprParser {
 
   def bgpParen[_:P]:P[BGP] = P("(" ~ bgp ~ triple.rep(1) ~ ")").map(BGP(_))
 
-  def filterFunction[_:P]:P[FilterFunction] =
-    P("(" ~ CharsWhile(_ != ' ').! ~ CharsWhile(_ != ' ').! ~ CharsWhile(_ != ')').! ~ ")").map {
-      f => FilterFunction(f._1, f._2, f._3)
+  def filterExpr[_:P]:P[FilterExpr] =
+    P("(" ~ FilterFunctionParser.parse ~ StringValParser.tripleValParser ~ StringValParser.tripleValParser ~ ")").map {
+      f => FilterExpr(f._1, f._2, f._3)
     }
 
-  def filterExprList[_:P]:P[Seq[FilterFunction]] =
-    P("(" ~ exprList ~ filterFunction.rep(2) ~ ")")
+  def filterExprList[_:P]:P[Seq[FilterExpr]] =
+    P("(" ~ exprList ~ filterExpr.rep(2) ~ ")")
 
   def filterListParen[_:P]:P[Filter] =
     P("(" ~ filter ~ filterExprList ~ graphPattern ~ ")").map {
@@ -35,7 +35,7 @@ object ExprParser {
     }
 
   def filterSingleParen[_:P]:P[Filter] =
-    P("(" ~ filter ~ filterFunction ~ graphPattern ~ ")").map {
+    P("(" ~ filter ~ filterExpr ~ graphPattern ~ ")").map {
       p => Filter(List(p._1), p._2)
     }
 

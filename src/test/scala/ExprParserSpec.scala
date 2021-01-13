@@ -87,15 +87,18 @@ class ExprParserSpec extends AnyFlatSpec {
   "Filter over simple BGP" should "Result in correct nesting of filter and BGP" in {
     val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/q8-filter-simple-basic-graph.sparql"), ExprParser.parser(_))
     p.get.value match {
-      case Filter(s1:Seq[FilterFunction], b:BGP) => succeed
+      case Filter(s1:Seq[FilterExpr], b:BGP) => succeed
       case _ => fail
     }
   }
 
   "Multiple filters over simple BGP" should "Result in correct nesting of filters and BGP" in {
     val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/q9-double-filter-simple-basic-graph.sparql"), ExprParser.parser(_))
+    println(p)
     p.get.value match {
-      case Filter(s1:Seq[FilterFunction], b:BGP) => succeed
+      case Filter(List(
+                    FilterExpr(EQUALS(),VARIABLE(s1:String), STRING(s2:String)),
+                    FilterExpr(REGEX(), VARIABLE(s3:String), STRING(s4:String))), b:BGP) => succeed
       case _ => fail
     }
   }
@@ -104,11 +107,11 @@ class ExprParserSpec extends AnyFlatSpec {
     val p  = fastparse.parse(TestUtils.sparql2Algebra("/queries/q10-complex-filter.sparql"), ExprParser.parser(_))
     p.get.value match {
       case Filter(
-            seq1:Seq[FilterFunction],
+            seq1:Seq[FilterExpr],
               Union(
                 Union(
                   Filter(
-                    seq2:Seq[FilterFunction],
+                    seq2:Seq[FilterExpr],
                     Extend(s1:StringVal, s2:StringVal,
                       LeftJoin(
                         LeftJoin(
@@ -144,12 +147,12 @@ class ExprParserSpec extends AnyFlatSpec {
     val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/q13-complex-named-graph.sparql"), ExprParser.parser(_))
     p.get.value match {
       case Filter(
-        seq1:Seq[FilterFunction],
+        seq1:Seq[FilterExpr],
         Union(
           Union(
             Graph(g1:URIVAL,
             Filter(
-              seq2:Seq[FilterFunction],
+              seq2:Seq[FilterExpr],
               Extend(s1:StringVal, s2:StringVal,
                 LeftJoin(
                   LeftJoin(
@@ -184,14 +187,13 @@ class ExprParserSpec extends AnyFlatSpec {
     }
   }
 
-  /*Assertions are beginning to get complex. The asssumption that previous tests appropriately exercise the parser
+  /*Assertions are beginning to get complex. The assumption is that previous tests appropriately exercise the parser
   combinator functions
    */
   "Complex nested string function query" should "return proper nested type" in {
-    val p = fastparse.parse(TestUtils.sparql2Algebra("queries/q16-string-functions-nested-complex.sparql"), ExprParser.parser(_))
+    val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/q16-string-functions-nested-complex.sparql"),
+      ExprParser.parser(_))
     val output = TestUtils.readOutputFile("queries/output/q16-output.sparql")
-
-    println(output)
     assert(output == p.get.value.toString)
   }
 }
