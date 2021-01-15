@@ -65,23 +65,4 @@ class StringFuncParserSpec extends AnyFlatSpec {
       case _ => fail
     }
   }
-
-  "strstarts function" should "return STRSTARTS type" in {
-    val s = "(strstarts \"http://google.com/new:helloworld\" \"ner:\")"
-    val p = fastparse.parse(s, StringFuncParser.parser(_))
-    p.get.value match {
-      case STRSTARTS(STRING("http://google.com/new:helloworld"), STRING("ner:")) => succeed
-      case _ => fail
-    }
-  }
-
-  "nested strstarts function" should "return nested STRSTARTS type" in {
-
-    val s = "(uri (strstarts (concat (str ?d) (str ?src)) \"#\"))"
-    val p = fastparse.parse(s, StringFuncParser.parser(_))
-    p.get.value match {
-      case URI(STRSTARTS(CONCAT(STR(VARIABLE(a1: String)), STR(VARIABLE(a2: String))), STRING("#"))) => succeed
-      case _ => fail
-    }
-  }
 }

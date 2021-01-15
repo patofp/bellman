@@ -21,13 +21,8 @@ object ExprParser {
 
   def bgpParen[_:P]:P[BGP] = P("(" ~ bgp ~ triple.rep(1) ~ ")").map(BGP(_))
 
-  def filterExpr[_:P]:P[FilterExpr] =
-    P("(" ~ FilterFunctionParser.parse ~ StringValParser.tripleValParser ~ StringValParser.tripleValParser ~ ")").map {
-      f => FilterExpr(f._1, f._2, f._3)
-    }
-
-  def filterExprList[_:P]:P[Seq[FilterExpr]] =
-    P("(" ~ exprList ~ filterExpr.rep(2) ~ ")")
+  def filterExprList[_:P]:P[Seq[FilterFunction]] =
+    P("(" ~ exprList ~ FilterFunctionParser.parser.rep(2) ~ ")")
 
   def filterListParen[_:P]:P[Filter] =
     P("(" ~ filter ~ filterExprList ~ graphPattern ~ ")").map {
@@ -35,12 +30,16 @@ object ExprParser {
     }
 
   def filterSingleParen[_:P]:P[Filter] =
-    P("(" ~ filter ~ filterExpr ~ graphPattern ~ ")").map {
+    P("(" ~ filter ~ FilterFunctionParser.parser ~ graphPattern ~ ")").map {
       p => Filter(List(p._1), p._2)
     }
 
   def leftJoinParen[_:P]:P[LeftJoin] = P("(" ~ leftJoin ~ graphPattern ~ graphPattern ~ ")").map{
     lj => LeftJoin(lj._1, lj._2)
+  }
+
+  def filteredLeftJoinParen[_:P]:P[FilteredLeftJoin] = P("(" ~ leftJoin ~ graphPattern ~ graphPattern ~ FilterFunctionParser.parser ~ ")").map{
+    lj => FilteredLeftJoin(lj._1, lj._2, lj._3)
   }
 
   def unionParen[_:P]:P[Union] = P("(" ~ union ~ graphPattern ~ graphPattern ~ ")").map {
@@ -63,6 +62,7 @@ object ExprParser {
 
   def graphPattern[_:P]:P[Expr] =
     P(leftJoinParen
+      | filteredLeftJoinParen
       | joinParen
       | graphParen
       | bgpParen
