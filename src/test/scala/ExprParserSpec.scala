@@ -94,7 +94,6 @@ class ExprParserSpec extends AnyFlatSpec {
 
   "Multiple filters over simple BGP" should "Result in correct nesting of filters and BGP" in {
     val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/q9-double-filter-simple-basic-graph.sparql"), ExprParser.parser(_))
-    println(p)
     p.get.value match {
       case Filter(List(
                     FilterExpr(EQUALS(),VARIABLE(s1:String), STRING(s2:String)),
@@ -193,7 +192,22 @@ class ExprParserSpec extends AnyFlatSpec {
   "Complex nested string function query" should "return proper nested type" in {
     val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/q16-string-functions-nested-complex.sparql"),
       ExprParser.parser(_))
-    val output = TestUtils.readOutputFile("queries/output/q16-output.sparql")
+    val output = TestUtils.readOutputFile("queries/output/q16-output.txt")
     assert(output == p.get.value.toString)
   }
+
+  "Full query1" should "return proper type" in {
+    val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/lit-search-1.sparql"),
+      ExprParser.parser(_))
+
+    val output = TestUtils.readOutputFile("/queries/output/q17-output.txt")
+    assert(output == p.get.value.toString)
+  }
+
+/*  "Full query2" should "return proper type" in {
+    val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/lit-search-2.sparql"),
+      ExprParser.parser(_))
+    val output = TestUtils.readOutputFile("queries/output/q18-output.txt")
+    assert(output == p.get.value.toString)
+  }*/
 }

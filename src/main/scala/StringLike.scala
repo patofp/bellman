@@ -6,6 +6,7 @@ final case class URI(s:StringLike) extends StringFunc
 final case class CONCAT(appendTo:StringLike, append:StringLike) extends StringFunc
 final case class STR(s:StringLike) extends StringFunc
 final case class STRAFTER(s:StringLike, f:StringLike) extends StringFunc
+final case class STRSTARTS(s:StringLike, f:StringLike) extends StringFunc
 
 sealed trait StringVal extends StringLike
 

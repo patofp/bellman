@@ -9,6 +9,7 @@ object StringFuncParser {
   def concat[_:P]:P[Unit] = P("concat")
   def str[_:P]:P[Unit] = P("str")
   def strafter[_:P]:P[Unit] = P("strafter")
+  def strstarts[_:P]:P[Unit] = P("strstarts")
 
   def uriParen[_:P]:P[URI] = P("(" ~ uri ~ stringPatterns ~ ")").map{ s => URI(s)}
   def concatParen[_:P]:P[CONCAT] = ("(" ~ concat ~ stringPatterns ~ stringPatterns ~ ")").map{
@@ -19,11 +20,16 @@ object StringFuncParser {
     s => STRAFTER(s._1, s._2)
   }
 
+  def strstartsParen[_:P]:P[STRSTARTS] = P("(" ~ strstarts ~ stringPatterns ~ stringPatterns ~ ")").map{
+    s => STRSTARTS(s._1, s._2)
+  }
+
   def stringPatterns[_:P]:P[StringLike] =
     P(uriParen
       | concatParen
       | strParen
       | strafterParen
+      | strstartsParen
       | StringValParser.string
       | StringValParser.variable)
 

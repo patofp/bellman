@@ -1,0 +1,57 @@
+PREFIX  schema: <http://schema.org/>
+PREFIX  rdf:  <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX  xml:  <http://www.w3.org/XML/1998/namespace>
+PREFIX  xsd:  <http://www.w3.org/2001/XMLSchema#>
+PREFIX  dm:   <http://gsk-kg.rdip.gsk.com/dm/1.0/>
+PREFIX  prism: <http://prismstandard.org/namespaces/basic/2.0/>
+PREFIX  litg:  <http://lit-search-api/graph/>
+PREFIX  litc:  <http://lit-search-api/class/>
+PREFIX  litn:  <http://lit-search-api/node/>
+PREFIX  litp:  <http://lit-search-api/property/>
+PREFIX  lita:  <http://lit-search-api/attribute/>
+
+CONSTRUCT
+{
+    ?doc a litc:Document .
+    ?doc lita:docId ?docid .
+    ?doc lita:title ?title .
+    ?doc lita:docSource ?src .
+    ?doc lita:origId ?origId .
+    ?doc lita:year ?year .
+    ?year a xsd:integer .
+    ?doc litp:containsSection ?docsec .
+    ?docsec litp:partOfDoc ?doc .
+    ?docsec a litc:DocSection .
+    ?docsec lita:sectionId ?secid .
+    ?docsec lita:docId ?docid .
+    ?doc lita:doi ?doi .
+    ?doc lita:pmid ?pmid .
+    ?pmid a xsd:integer .
+    ?doc lita:kw ?kw .
+    ?doc lita:month ?month .
+    ?doc lita:day ?day .
+    ?year a xsd:integer .
+    ?docsec lita:heading ?heading .
+    ?docsec lita:sectionType ?sectype .
+}
+WHERE
+{
+    ?d a dm:Document .
+    ?d dm:docSource ?src .
+    ?d schema:title ?title .
+    ?d dm:contains ?ds .
+    ?ds a dm:DocSection .
+    OPTIONAL { ?d dm:pubDateYear ?year }
+    OPTIONAL { ?d dm:origId ?origId }
+    OPTIONAL { ?d prism:doi ?doi }
+    OPTIONAL { ?d dm:pmid ?pmid }
+    OPTIONAL { ?d prism:keyword ?kw }
+    OPTIONAL { ?d dm:pubDateMonth ?month }
+    OPTIONAL { ?d dm:pubDateDay ?day }
+    OPTIONAL { ?ds dm:heading ?heading }
+    OPTIONAL { ?ds prism:section ?sectype }
+    BIND(STRAFTER(str(?d), "#") as ?docid) .
+    BIND(URI(CONCAT("http://lit-search-api/node/doc#", ?docid)) as ?doc) .
+    BIND(STRAFTER(str(?ds), "#") as ?secid) .
+    BIND(URI(CONCAT("http://lit-search-api/node/docsec#", ?secid)) as ?docsec) .
+}
