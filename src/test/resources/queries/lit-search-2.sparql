@@ -1,0 +1,75 @@
+# Construct triples pertaining to detected entities in documents (which
+# have been filtered by their docSource), and optional entity links to
+# ontology concepts
+
+PREFIX  schema: <http://schema.org/>
+PREFIX  rdf:  <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX  xml:  <http://www.w3.org/XML/1998/namespace>
+PREFIX  xsd:  <http://www.w3.org/2001/XMLSchema#>
+PREFIX  dm:   <http://gsk-kg.rdip.gsk.com/dm/1.0/>
+PREFIX  prism: <http://prismstandard.org/namespaces/basic/2.0/>
+PREFIX  litg:  <http://lit-search-api/graph/>
+PREFIX  litc:  <http://lit-search-api/class/>
+PREFIX  litn:  <http://lit-search-api/node/>
+PREFIX  litp:  <http://lit-search-api/property/>
+PREFIX  lita:  <http://lit-search-api/attribute/>
+
+CONSTRUCT
+{
+    ?doc litp:containsEntity ?detent .
+    ?detent litp:partOfDoc ?doc .
+    ?docsec litp:containsEntity ?detent .
+    ?detent litp:partOfSection ?docsec .
+    ?detent a litc:DetectedEntity .
+    ?detent lita:docId ?docid .
+    ?detent lita:sectionId ?secid .
+    ?detent lita:entityId ?entid .
+    ?detent lita:contextText ?txt .
+    ?detent lita:contextTokens ?tok .
+    ?detent lita:entityText ?etxt .
+    ?detent lita:entityClass ?classId .
+    ?detent lita:confidence ?conf .
+    ?detent lita:indexStart ?idxs .
+    ?detent lita:indexEnd ?idxe .
+    ?detent lita:nerModel ?nermodel .
+    ?detent lita:normModel ?normmodel .
+    ?idxs a xsd:integer .
+    ?idxe a xsd:integer .
+}
+WHERE
+{
+    ?d a dm:Document .
+    ?d dm:contains ?ds .
+    ?ds a dm:DocSection .
+    ?ds dm:contains ?te .
+    ?te a dm:TextElement .
+    ?te dm:text ?txt .
+    OPTIONAL { ?te dm:tokens ?tok }
+    ?te dm:contains ?de .
+    ?de a dm:DetectedEntity .
+    ?de dm:text ?etxt .
+    ?de dm:predEntityClass ?x .
+    ?x dm:predClass ?cls .
+    OPTIONAL { ?x dm:confidence ?conf }
+    ?de dm:indexStart ?idxs .
+    ?de dm:indexEnd ?idxe .
+    OPTIONAL {
+        ?de dm:predictedBy ?model .
+        ?model dm:modelName ?modelname .
+        BIND(STRAFTER(str(?modelname), "ner:") as ?nermodel) .
+        FILTER (STRSTARTS(str(?modelname), "ner:"))
+    }
+    OPTIONAL {
+        ?de dm:predictedBy ?model .
+        ?model dm:modelName ?modelname .
+        BIND(STRAFTER(str(?modelname), "norm:") as ?normmodel) .
+        FILTER (STRSTARTS(str(?modelname), "norm:"))
+    }
+    BIND(STRAFTER(str(?d), "#") as ?docid) .
+    BIND(URI(CONCAT("http://lit-search-api/node/doc#", ?docid)) as ?doc) .
+    BIND(STRAFTER(str(?ds), "#") as ?secid) .
+    BIND(URI(CONCAT("http://lit-search-api/node/docsec#", ?secid)) as ?docsec) .
+    BIND(STRAFTER(str(?de), "#") as ?entid) .
+    BIND(URI(CONCAT("http://lit-search-api/node/entity#", ?entid)) as ?detent) .
+    BIND(STRAFTER(str(?cls), "#") as ?classId) .
+}

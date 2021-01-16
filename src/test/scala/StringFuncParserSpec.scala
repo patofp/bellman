@@ -53,6 +53,7 @@ class StringFuncParserSpec extends AnyFlatSpec {
     val p = fastparse.parse(s, StringFuncParser.parser(_))
     p.get.value match {
       case STRAFTER(STR(VARIABLE(s1:String)), STRING(s2:String)) => succeed
+      case _ => fail
     }
   }
 
