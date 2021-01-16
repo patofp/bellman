@@ -1,0 +1,49 @@
+PREFIX  schema: <http://schema.org/>
+PREFIX  rdf:  <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX  xml:  <http://www.w3.org/XML/1998/namespace>
+PREFIX  xsd:  <http://www.w3.org/2001/XMLSchema#>
+PREFIX  dm:   <http://gsk-kg.rdip.gsk.com/dm/1.0/>
+PREFIX  prism: <http://prismstandard.org/namespaces/basic/2.0/>
+PREFIX  litg:  <http://lit-search-api/graph/>
+PREFIX  litc:  <http://lit-search-api/class/>
+PREFIX  litn:  <http://lit-search-api/node/>
+PREFIX  litp:  <http://lit-search-api/property/>
+PREFIX  lita:  <http://lit-search-api/attribute/>
+
+CONSTRUCT
+{
+    ?detent litp:entityLink _:el .
+    _:el lita:confidence ?linkconf .
+    ?linkconf a xsd:float .
+    _:el litp:entityLink ?concept .
+    #?detent litp:entityLink ?concept .
+    ?concept litp:linkedByEntity ?detent .
+    ?doc litp:containsConcept ?concept .
+    ?concept litp:partOfDoc ?doc .
+    ?docsec litp:containsConcept ?concept .
+    ?concept litp:partOfSection ?docsec .
+    ?concept lita:conceptId ?cui .
+    ?concept a litc:Concept .
+}
+WHERE
+{
+    ?d a dm:Document .
+    ?d dm:contains ?ds .
+    ?ds a dm:DocSection .
+    ?ds dm:contains ?te .
+    ?te a dm:TextElement .
+    ?te dm:contains ?de .
+    ?de a dm:DetectedEntity .
+    ?de dm:entityLink ?le .
+    ?le a dm:LinkedEntity .
+    OPTIONAL { ?le dm:confidence ?linkconf }
+    ?le dm:mappedTo ?concept .
+
+    BIND(STRAFTER(str(?d), "#") as ?docid) .
+    BIND(URI(CONCAT("http://lit-search-api/node/doc#", ?docid)) as ?doc) .
+    BIND(STRAFTER(str(?ds), "#") as ?secid) .
+    BIND(URI(CONCAT("http://lit-search-api/node/docsec#", ?secid)) as ?docsec) .
+    BIND(STRAFTER(str(?de), "#") as ?entid) .
+    BIND(URI(CONCAT("http://lit-search-api/node/entity#", ?entid)) as ?detent) .
+    BIND(CONCAT("CUI:", STRAFTER(str(?concept), "CUI=")) as ?cui) .
+}
