@@ -1,4 +1,8 @@
 import org.scalatest.flatspec.AnyFlatSpec
+import Expr._
+import FilterFunction._
+import StringVal._
+import StringFunc._
 
 class ExprParserSpec extends AnyFlatSpec {
 

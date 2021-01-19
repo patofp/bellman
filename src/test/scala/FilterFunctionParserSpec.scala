@@ -1,6 +1,8 @@
-import org.apache.jena.query.QueryFactory
-import org.apache.jena.sparql.algebra.Algebra
 import org.scalatest.flatspec.AnyFlatSpec
+import FilterFunction._
+import StringVal._
+import StringFunc._
+
 
 class FilterFunctionParserSpec extends AnyFlatSpec{
 

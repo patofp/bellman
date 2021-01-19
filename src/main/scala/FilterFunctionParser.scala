@@ -1,4 +1,5 @@
 import fastparse._, MultiLineWhitespace._
+import FilterFunction._
 
 object FilterFunctionParser {
   def equals[_:P]:P[Unit] = P("=")

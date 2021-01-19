@@ -1,5 +1,5 @@
-import ExprParser.graphPattern
 import fastparse._, MultiLineWhitespace._
+import StringVal._
 
 object StringValParser {
   def string[_:P]:P[STRING] = P("\"" ~ CharsWhile(_ != '\"').! ~ "\"").map{STRING}

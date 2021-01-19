@@ -1,4 +1,7 @@
 import fastparse._, MultiLineWhitespace._
+import Expr._
+import StringVal._
+import StringFunc._
 
 object ExprParser {
   /*
