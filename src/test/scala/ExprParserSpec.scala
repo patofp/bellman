@@ -227,7 +227,29 @@ class ExprParserSpec extends AnyFlatSpec {
 
     val output = TestUtils.readOutputFile("/queries/output/lit-search-2-output.txt")
     assert(output == p.get.value.toString)
-    //val output = TestUtils.readOutputFile("queries/output/lit-search-2-output.txt")
-    //assert(output == p.get.value.toString)
+  }
+  "Full query3" should "return proper type" in {
+    val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/lit-search-3.sparql"),
+      ExprParser.parser(_))
+    val output = TestUtils.readOutputFile("/queries/output/lit-search-3-output.txt")
+    assert(output == p.get.value.toString)
+  }
+  "Full query4" should "return proper type" in {
+    val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/lit-search-4.sparql"),
+      ExprParser.parser(_))
+    val output = TestUtils.readOutputFile("/queries/output/lit-search-4-output.txt")
+    assert(output == p.get.value.toString)
+  }
+  "Full query5" should "return proper type" in {
+    val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/lit-search-5.sparql"),
+      ExprParser.parser(_))
+    val output = TestUtils.readOutputFile("/queries/output/lit-search-5-output.txt")
+    assert(output == p.get.value.toString)
+  }
+  "Full query6" should "return proper type" in {
+    val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/lit-search-6.sparql"),
+      ExprParser.parser(_))
+    val output = TestUtils.readOutputFile("/queries/output/lit-search-6-output.txt")
+    assert(output == p.get.value.toString)
   }
 }

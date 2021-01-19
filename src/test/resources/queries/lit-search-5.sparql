@@ -1,0 +1,27 @@
+PREFIX  schema: <http://schema.org/>
+PREFIX  rdf:  <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX  xml:  <http://www.w3.org/XML/1998/namespace>
+PREFIX  xsd:  <http://www.w3.org/2001/XMLSchema#>
+PREFIX  dm:   <http://gsk-kg.rdip.gsk.com/dm/1.0/>
+PREFIX  prism: <http://prismstandard.org/namespaces/basic/2.0/>
+PREFIX  litg:  <http://lit-search-api/graph/>
+PREFIX  litc:  <http://lit-search-api/class/>
+PREFIX  litn:  <http://lit-search-api/node/>
+PREFIX  litp:  <http://lit-search-api/property/>
+PREFIX  lita:  <http://lit-search-api/attribute/>
+PREFIX  sn: <http://gsk-kg.rdip.gsk.com/semanticnetwork/>
+
+CONSTRUCT
+{
+    ?umlsConcept litp:conceptLink ?snConcept .
+    ?snConcept litp:abbreviation ?snABR .
+    ?snConcpet litp:name ?snSTY_RL .
+    ?snConcept litp:treeNum ?snSTN_RTN .
+}
+WHERE
+{
+    ?umlsConcept dm:conceptLink ?snConcept .
+    ?snConcept sn:ABR ?snABR .
+    ?snConcept sn:STY_RL ?snSTY_RL .
+    ?snConcept sn:STN_RTN ?snSTN_RTN .
+}

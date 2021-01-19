@@ -1,0 +1,60 @@
+PREFIX  schema: <http://schema.org/>
+PREFIX  rdf:  <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX  xml:  <http://www.w3.org/XML/1998/namespace>
+PREFIX  xsd:  <http://www.w3.org/2001/XMLSchema#>
+PREFIX  dm:   <http://gsk-kg.rdip.gsk.com/dm/1.0/>
+PREFIX  prism: <http://prismstandard.org/namespaces/basic/2.0/>
+PREFIX  litg:  <http://lit-search-api/graph/>
+PREFIX  litc:  <http://lit-search-api/class/>
+PREFIX  litn:  <http://lit-search-api/node/>
+PREFIX  litp:  <http://lit-search-api/property/>
+PREFIX  lita:  <http://lit-search-api/attribute/>
+
+CONSTRUCT
+{
+    ?docsec litp:containsPredication ?pred .
+    ?pred a litc:Predication .
+    ?pred litp:hasSubj ?detentSubj .
+    ?pred litp:hasObj ?detentObj .
+    ?detentSubj litp:partOfPredication ?pred .
+    ?detentSubj litp:subjOf ?pred .
+    ?detentObj litp:partOfPredication ?pred .
+    ?detentObj litp:objOf ?pred .
+    ?pred lita:predicationId ?predid .
+    ?pred lita:sectionId ?secid .
+    ?pred lita:docId ?docid .
+    ?pred lita:modelName ?modelname .
+    ?pred lita:relationClass ?cls .
+    ?pred lita:confidence ?conf .
+    ?conf a xsd:float .
+
+}
+WHERE
+{
+    ?d a dm:Document .
+    ?d dm:contains ?ds .
+    ?ds a dm:DocSection .
+    ?ds dm:contains ?te .
+    ?te a dm:TextElement .
+    ?te dm:contains ?p .
+    ?p a dm:Predication .
+    ?p dm:predictedBy ?remodel .
+    ?remodel a dm:REModel .
+    ?remodel dm:modelName ?modelname .
+    ?p dm:hasSubject ?deSubj .
+    ?p dm:hasObject ?deObj .
+    ?p dm:predRelation ?b .
+    ?b dm:predClass ?cls .
+    OPTIONAL { ?b dm:confidence ?conf }
+
+    BIND(STRAFTER(str(?d), "#") as ?docid) .
+    BIND(URI(CONCAT("http://lit-search-api/node/doc#", ?docid)) as ?doc) .
+    BIND(STRAFTER(str(?ds), "#") as ?secid) .
+    BIND(URI(CONCAT("http://lit-search-api/node/docsec#", ?secid)) as ?docsec) .
+    BIND(STRAFTER(str(?deSubj), "#") as ?entidSubj) .
+    BIND(URI(CONCAT("http://lit-search-api/node/entity#", ?entidSubj)) as ?detentSubj) .
+    BIND(STRAFTER(str(?deObj), "#") as ?entidObj) .
+    BIND(URI(CONCAT("http://lit-search-api/node/entity#", ?entidObj)) as ?detentObj) .
+    BIND(STRAFTER(str(?p), "#") as ?predid) .
+    BIND(URI(CONCAT("http://lit-search-api/node/predication#", ?predid)) as ?pred)
+}
