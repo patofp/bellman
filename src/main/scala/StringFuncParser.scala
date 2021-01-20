@@ -1,5 +1,5 @@
-import ExprParser.graphPattern
 import fastparse._, MultiLineWhitespace._
+import StringFunc._
 
 object StringFuncParser {
   /*

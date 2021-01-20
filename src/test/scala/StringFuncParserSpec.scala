@@ -1,5 +1,6 @@
-import fastparse.Parsed
 import org.scalatest.flatspec.AnyFlatSpec
+import StringVal._
+import StringFunc._
 
 
 class StringFuncParserSpec extends AnyFlatSpec {
