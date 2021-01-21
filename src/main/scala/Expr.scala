@@ -1,3 +1,5 @@
+import StringVal.VARIABLE
+
 sealed trait Expr
 
 object Expr {
@@ -10,5 +12,6 @@ object Expr {
   final case class Filter(funcs:Seq[FilterFunction], expr:Expr) extends Expr
   final case class Join(l:Expr, r:Expr) extends Expr
   final case class Graph(g:StringVal, e:Expr) extends Expr
+  final case class Construct(vars: Seq[VARIABLE], bgp: BGP, r:Expr) extends Expr
+  final case class Select(vars: Seq[VARIABLE], r:Expr) extends Expr
 }
-
