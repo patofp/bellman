@@ -1,3 +1,5 @@
+package com.gsk.kg.sparqlparser
+
 sealed trait FilterFunction
 
 object FilterFunction {

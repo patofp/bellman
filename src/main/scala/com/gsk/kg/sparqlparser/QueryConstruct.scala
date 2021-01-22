@@ -1,11 +1,13 @@
+package com.gsk.kg.sparqlparser
+
+import com.gsk.kg.sparqlparser.StringVal._
+import com.gsk.kg.sparqlparser.Expr._
 import fastparse.Parsed.{Failure, Success}
 import org.apache.jena.graph.Node
 import org.apache.jena.query.QueryFactory
 import org.apache.jena.sparql.algebra.Algebra
 import org.apache.jena.sparql.core.Quad
-import Expr._
-import StringVal._
-import scala.io.Source
+
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 
 object QueryConstruct {

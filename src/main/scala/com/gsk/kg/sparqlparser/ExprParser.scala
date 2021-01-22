@@ -1,5 +1,8 @@
-import fastparse._, MultiLineWhitespace._
-import Expr._
+package com.gsk.kg.sparqlparser
+
+import com.gsk.kg.sparqlparser.Expr._
+import fastparse.MultiLineWhitespace._
+import fastparse._
 
 object ExprParser {
   /*
