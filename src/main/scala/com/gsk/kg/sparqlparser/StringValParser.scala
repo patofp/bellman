@@ -1,5 +1,8 @@
-import fastparse._, MultiLineWhitespace._
-import StringVal._
+package com.gsk.kg.sparqlparser
+
+import com.gsk.kg.sparqlparser.StringVal._
+import fastparse.MultiLineWhitespace._
+import fastparse._
 
 object StringValParser {
   def string[_:P]:P[STRING] = P("\"" ~ CharsWhile(_ != '\"').! ~ "\"").map{STRING}

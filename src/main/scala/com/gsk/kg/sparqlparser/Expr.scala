@@ -1,4 +1,5 @@
-import StringVal.VARIABLE
+package com.gsk.kg.sparqlparser
+import com.gsk.kg.sparqlparser.StringVal.VARIABLE
 
 sealed trait Expr
 

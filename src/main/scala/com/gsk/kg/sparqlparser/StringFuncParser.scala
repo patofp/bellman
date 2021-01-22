@@ -1,5 +1,8 @@
-import fastparse._, MultiLineWhitespace._
-import StringFunc._
+package com.gsk.kg.sparqlparser
+
+import com.gsk.kg.sparqlparser.StringFunc._
+import fastparse.MultiLineWhitespace._
+import fastparse._
 
 object StringFuncParser {
   /*

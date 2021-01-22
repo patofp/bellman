@@ -1,3 +1,4 @@
+import com.gsk.kg.sparqlparser.{Expr, QueryConstruct}
 import org.apache.jena.query.QueryFactory
 import org.apache.jena.sparql.algebra.Algebra
 

@@ -1,8 +1,9 @@
 import org.scalatest.flatspec.AnyFlatSpec
-import Expr._
-import FilterFunction._
-import StringVal._
-import StringFunc._
+import com.gsk.kg.sparqlparser.Expr._
+import com.gsk.kg.sparqlparser.FilterFunction._
+import com.gsk.kg.sparqlparser.StringVal._
+import com.gsk.kg.sparqlparser.StringFunc._
+import com.gsk.kg.sparqlparser._
 
 class ExprParserSpec extends AnyFlatSpec {
 

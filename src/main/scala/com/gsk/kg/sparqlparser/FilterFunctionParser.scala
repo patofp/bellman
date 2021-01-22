@@ -1,5 +1,8 @@
-import fastparse._, MultiLineWhitespace._
-import FilterFunction._
+package com.gsk.kg.sparqlparser
+
+import com.gsk.kg.sparqlparser.FilterFunction._
+import fastparse.MultiLineWhitespace._
+import fastparse._
 
 object FilterFunctionParser {
   def equals[_:P]:P[Unit] = P("=")
