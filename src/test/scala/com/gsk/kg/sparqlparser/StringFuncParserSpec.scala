@@ -1,7 +1,8 @@
-import org.scalatest.flatspec.AnyFlatSpec
-import com.gsk.kg.sparqlparser.StringVal._
+package com.gsk.kg.sparqlparser
+
 import com.gsk.kg.sparqlparser.StringFunc._
-import com.gsk.kg.sparqlparser.{StringFuncParser, StringLike}
+import com.gsk.kg.sparqlparser.StringVal._
+import org.scalatest.flatspec.AnyFlatSpec
 
 
 class StringFuncParserSpec extends AnyFlatSpec {
