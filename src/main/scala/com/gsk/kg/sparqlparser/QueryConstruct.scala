@@ -15,7 +15,6 @@ object QueryConstruct {
   case class SparqlParsingError(s: String) extends Exception(s)
 
   def parseADT(sparql: String): Expr = {
-    println("TESTING SCALASTYLE FAIL")
     val query = QueryFactory.create(sparql)
     val algebra = fastparse.parse(Algebra.compile(query).toString(), ExprParser.parser(_)) match {
       case Success(value, index) => value
