@@ -21,4 +21,5 @@ WHERE
   ?d a dm:Document .
   ?d dm:docSource ?src .
   FILTER (STRSTARTS(str(?src), "ner:"))
+  FILTER (?year > "2015")
 }

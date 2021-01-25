@@ -32,4 +32,20 @@ class FilterFunctionParserSpec extends AnyFlatSpec{
       case _ => fail
     }
   }
+
+  "GT parser" should "return GT type" in {
+    val p = fastparse.parse("""(> ?year "2015")""", FilterFunctionParser.gtParen(_))
+    p.get.value match {
+      case GT(VARIABLE("?year"), STRING("2015")) => succeed
+      case _ => fail
+    }
+  }
+
+  "LT parser" should "return LT type" in {
+    val p = fastparse.parse("""(< ?year "2015")""", FilterFunctionParser.ltParen(_))
+    p.get.value match {
+      case LT(VARIABLE("?year"), STRING("2015")) => succeed
+      case _ => fail
+    }
+  }
 }

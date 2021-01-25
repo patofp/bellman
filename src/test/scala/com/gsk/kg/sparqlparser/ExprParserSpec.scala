@@ -194,7 +194,7 @@ class ExprParserSpec extends AnyFlatSpec {
   "Nested filter function" should "return proper nested types" in {
     val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/q17-filter-nested.sparql"), ExprParser.parser(_))
     p.get.value match {
-      case Filter(List(STRSTARTS(STR(VARIABLE("?src")),STRING("ner:"))),
+      case Filter(List(STRSTARTS(STR(VARIABLE("?src")),STRING("ner:")),GT(VARIABLE("?year"), STRING("2015"))),
                   BGP(
                     List(
                       Triple(
@@ -209,9 +209,23 @@ class ExprParserSpec extends AnyFlatSpec {
     }
   }
 
+  "Simple > FILTER query" should "return the proper type" in {
+    val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/q18-filter-gt.sparql"), ExprParser.parser(_))
+    p.get.value match {
+      case Filter(List(GT(VARIABLE("?year"), STRING("2015"))),BGP(l1:Seq[Triple])) => succeed
+      case _ => fail
+    }
+  }
 
-  /*Assertions are beginning to get complex. The assumption is that previous tests appropriately exercise the parser
-  combinator functions
+  "Simple < FILTER query" should "return the proper type" in {
+    val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/q19-filter-lt.sparql"), ExprParser.parser(_))
+    p.get.value match {
+      case Filter(List(LT(VARIABLE("?year"), STRING("2015"))),BGP(l1:Seq[Triple])) => succeed
+      case _ => fail
+    }
+  }
+  /*Below are where assertions are beginning to get complex. The assumption is that previous tests appropriately exercise the parser
+  combinator functions. Reading expected results from file instead of explicitly defining inline.
    */
   "Complex nested string function query" should "return proper nested type" in {
     val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/q16-string-functions-nested-complex.sparql"),
@@ -256,6 +270,13 @@ class ExprParserSpec extends AnyFlatSpec {
     val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/lit-search-6.sparql"),
       ExprParser.parser(_))
     val output = TestUtils.readOutputFile("/queries/output/lit-search-6-output.txt")
+    assert(output == p.get.value.toString)
+  }
+
+  "Extra large query" should "return proper type" in {
+    val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/lit-search-xlarge.sparql"),
+      ExprParser.parser(_))
+    val output = TestUtils.readOutputFile("/queries/output/lit-search-xlarge-output.txt")
     assert(output == p.get.value.toString)
   }
 }
