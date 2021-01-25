@@ -20,6 +20,8 @@ object QueryConstruct {
       case Success(value, index) => value
       case Failure(str, i, extra) =>
         throw SparqlParsingError(s"$str at position $i, $extra")
+      case _ => //Failure()
+        throw SparqlParsingError(s"$sparql parsing failure.")
     }
     if (query.isConstructType) {
       val template = query.getConstructTemplate
