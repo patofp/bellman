@@ -59,8 +59,8 @@ class QueryConstructSpec extends AnyFlatSpec {
         assert(bgp.triples.size == 67)
         assert(bgp.triples.head.s.asInstanceOf[VARIABLE].v == "?Year")
         assert(bgp.triples.last.s.asInstanceOf[VARIABLE].v == "?Predication")
+        assert(vars.exists(v => v.v == "?de"))
       case _ => fail
     }
   }
-
 }
