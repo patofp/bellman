@@ -1,9 +1,10 @@
-import org.scalatest.flatspec.AnyFlatSpec
+package com.gsk.kg.sparqlparser
+
 import com.gsk.kg.sparqlparser.Expr._
 import com.gsk.kg.sparqlparser.FilterFunction._
-import com.gsk.kg.sparqlparser.StringVal._
 import com.gsk.kg.sparqlparser.StringFunc._
-import com.gsk.kg.sparqlparser._
+import com.gsk.kg.sparqlparser.StringVal._
+import org.scalatest.flatspec.AnyFlatSpec
 
 class ExprParserSpec extends AnyFlatSpec {
 
@@ -215,7 +216,7 @@ class ExprParserSpec extends AnyFlatSpec {
   "Complex nested string function query" should "return proper nested type" in {
     val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/q16-string-functions-nested-complex.sparql"),
       ExprParser.parser(_))
-    val output = TestUtils.readOutputFile("queries/output/q16-output.txt")
+    val output = TestUtils.readOutputFile("/queries/output/q16-output.txt")
     assert(output == p.get.value.toString)
   }
 
