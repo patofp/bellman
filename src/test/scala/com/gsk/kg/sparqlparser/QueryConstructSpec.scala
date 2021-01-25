@@ -51,7 +51,16 @@ class QueryConstructSpec extends AnyFlatSpec {
         assert(vars.exists(v => v.v == "?secid"))
       case _ => fail
     }
-
   }
 
+  "Extra large query" should "return proper Construct type" in {
+    TestUtils.queryConstruct("/queries/lit-search-xlarge.sparql") match {
+      case Construct(vars, bgp, expr) =>
+        assert(bgp.triples.size == 67)
+        assert(bgp.triples.head.s.asInstanceOf[VARIABLE].v == "?Year")
+        assert(bgp.triples.last.s.asInstanceOf[VARIABLE].v == "?Predication")
+        assert(vars.exists(v => v.v == "?de"))
+      case _ => fail
+    }
+  }
 }

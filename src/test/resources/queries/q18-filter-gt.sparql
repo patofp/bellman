@@ -1,0 +1,17 @@
+PREFIX  schema: <http://schema.org/>
+PREFIX  rdf:  <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX  xml:  <http://www.w3.org/XML/1998/namespace>
+PREFIX  xsd:  <http://www.w3.org/2001/XMLSchema#>
+PREFIX  dm:   <http://id.gsk.com/dm/1.0/>
+
+CONSTRUCT
+{
+  ?d a dm:Document .
+  ?d dm:docSource ?src .
+}
+WHERE
+{
+  ?d a dm:Document .
+  ?d dm:docSource ?src .
+  FILTER (?year > "2015")
+}
