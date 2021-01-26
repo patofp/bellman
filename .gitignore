@@ -202,3 +202,5 @@ $RECYCLE.BIN/
 
 #vim
 *.swp
+
+sonatype.sbt
