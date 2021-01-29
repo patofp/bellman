@@ -14,8 +14,9 @@ object StringFunc {
 
 object StringVal {
   final case class STRING(s:String) extends StringVal
-  final case class VARIABLE(v:String) extends StringVal
-  final case class URIVAL(u:String) extends StringVal
-  final case class BLANK(ref:String) extends StringVal
+  final case class NUM(s:String) extends StringVal
+  final case class VARIABLE(s:String) extends StringVal
+  final case class URIVAL(s:String) extends StringVal
+  final case class BLANK(s:String) extends StringVal
 }
 

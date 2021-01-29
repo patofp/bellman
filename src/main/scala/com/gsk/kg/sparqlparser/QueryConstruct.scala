@@ -2,6 +2,8 @@ package com.gsk.kg.sparqlparser
 
 import com.gsk.kg.sparqlparser.StringVal._
 import com.gsk.kg.sparqlparser.Expr._
+import com.gsk.kg.sparqlparser.FilterFunction._
+import com.gsk.kg.sparqlparser.StringFunc._
 import fastparse.Parsed.{Failure, Success}
 import org.apache.jena.graph.Node
 import org.apache.jena.query.QueryFactory
@@ -16,10 +18,12 @@ object QueryConstruct {
 
   def parseADT(sparql: String): Expr = {
     val query = QueryFactory.create(sparql)
-    val algebra = fastparse.parse(Algebra.compile(query).toString(), ExprParser.parser(_)) match {
+    val compiled = Algebra.compile(query).toString()
+    val parsed = fastparse.parse(compiled, ExprParser.parser(_))
+    val algebra =  parsed match {
       case Success(value, index) => value
       case Failure(str, i, extra) =>
-        throw SparqlParsingError(s"$str at position $i, $extra")
+        throw SparqlParsingError(s"$str at position $i, ${extra.input}")
       case _ => //Failure()
         throw SparqlParsingError(s"$sparql parsing failure.")
     }
@@ -29,8 +33,7 @@ object QueryConstruct {
       val bgp = toBGP(template.getQuads.asScala.toSeq)
       Construct(vars, bgp, algebra)
     } else if (query.isSelectType) {
-      val vars = query.getProjectVars.asScala.map(v => VARIABLE(v.getVarName)).toSeq
-      Select(vars, algebra)
+      algebra
     } else {
       throw SparqlParsingError(s"The query type: ${query.queryType()} is not supported yet")
     }

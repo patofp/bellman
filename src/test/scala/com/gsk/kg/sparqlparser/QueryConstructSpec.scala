@@ -19,7 +19,7 @@ class QueryConstructSpec extends AnyFlatSpec {
     TestUtils.queryConstruct("/queries/q3-union.sparql") match {
       case Construct(vars, bgp, Union(BGP(triplesL: Seq[Triple]), BGP(triplesR: Seq[Triple]))) =>
         val temp = QueryConstruct.getAllVariableNames(bgp)
-        val all = vars.map(_.v).toSet
+        val all = vars.map(_.s).toSet
         assert((all -- temp) == Set("?lnk"))
       case _ => fail
     }
@@ -29,7 +29,7 @@ class QueryConstructSpec extends AnyFlatSpec {
   "Construct with Bind" should "contains bind variable" in {
     TestUtils.queryConstruct("/queries/q4-simple-bind.sparql") match {
       case Construct(vars, bgp, Extend(l: StringVal, r: StringVal, BGP(triples: Seq[Triple]))) =>
-        vars.exists(_.v == "?dbind")
+        vars.exists(_.s == "?dbind")
       case _ => fail
     }
   }
@@ -38,7 +38,7 @@ class QueryConstructSpec extends AnyFlatSpec {
     TestUtils.queryConstruct("/queries/q13-complex-named-graph.sparql") match {
       case Construct(vars, bgp, expr) =>
         assert(vars.size == 13)
-        assert(vars.exists(va => va.v == "?ogihw"))
+        assert(vars.exists(va => va.s == "?ogihw"))
       case _ => fail
     }
   }
@@ -47,8 +47,8 @@ class QueryConstructSpec extends AnyFlatSpec {
     TestUtils.queryConstruct("/queries/lit-search-3.sparql") match {
       case Construct(vars, bgp, expr) =>
         assert(bgp.triples.size == 11)
-        assert(bgp.triples.head.o.asInstanceOf[BLANK].ref == bgp.triples(1).s.asInstanceOf[BLANK].ref)
-        assert(vars.exists(v => v.v == "?secid"))
+        assert(bgp.triples.head.o.asInstanceOf[BLANK].s == bgp.triples(1).s.asInstanceOf[BLANK].s)
+        assert(vars.exists(v => v.s == "?secid"))
       case _ => fail
     }
   }
@@ -57,9 +57,32 @@ class QueryConstructSpec extends AnyFlatSpec {
     TestUtils.queryConstruct("/queries/lit-search-xlarge.sparql") match {
       case Construct(vars, bgp, expr) =>
         assert(bgp.triples.size == 67)
-        assert(bgp.triples.head.s.asInstanceOf[VARIABLE].v == "?Year")
-        assert(bgp.triples.last.s.asInstanceOf[VARIABLE].v == "?Predication")
-        assert(vars.exists(v => v.v == "?de"))
+        assert(bgp.triples.head.s.asInstanceOf[VARIABLE].s == "?Year")
+        assert(bgp.triples.last.s.asInstanceOf[VARIABLE].s == "?Predication")
+        assert(vars.exists(v => v.s == "?de"))
+      case _ => fail
+    }
+  }
+
+  "Select query" should "be supported even it is nested" in {
+    val query =
+      """
+        PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+        PREFIX  dm:  <http://gsk-kg.rdip.gsk.com/dm/1.0/>
+        CONSTRUCT {
+          ?d a dm:Document .
+          ?d dm:docSource ?src .
+        } WHERE {
+          SELECT ?name ?person WHERE {
+            ?person foaf:mbox <mailto:alice@example.org> .
+            ?person foaf:name ?name .
+            FILTER(?year > 2010)
+          }
+        }
+      """
+
+    QueryConstruct.parseADT(query) match {
+      case Construct(vars, bgp, Select(List(VARIABLE("?name"), VARIABLE("?person")),Filter(funcs,expr))) => succeed
       case _ => fail
     }
   }
