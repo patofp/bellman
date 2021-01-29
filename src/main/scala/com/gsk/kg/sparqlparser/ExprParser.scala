@@ -16,6 +16,11 @@ object ExprParser {
   def exprList[_:P]:P[Unit] = P("exprlist")
   def join[_:P]:P[Unit] = P("join")
   def graph[_:P]:P[Unit] = P("graph")
+  def select[_:P]:P[Unit] = P("project")
+
+  def selectParen[_:P]:P[Select] = P("(" ~ select ~ "(" ~ (StringValParser.variable).rep(1) ~ ")" ~ graphPattern ~ ")")
+    .map(p => Select(p._1, p._2))
+
 
   def triple[_:P]:P[Triple] =
     P("(triple" ~
@@ -65,7 +70,8 @@ object ExprParser {
   }
 
   def graphPattern[_:P]:P[Expr] =
-    P(leftJoinParen
+    P(selectParen
+      |leftJoinParen
       | filteredLeftJoinParen
       | joinParen
       | graphParen
