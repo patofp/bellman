@@ -101,7 +101,7 @@ class ExprParserSpec extends AnyFlatSpec {
   "Multiple filters over simple BGP" should "Result in correct nesting of filters and BGP" in {
     val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/q9-double-filter-simple-basic-graph.sparql"), ExprParser.parser(_))
     p.get.value match {
-      case Filter(List(
+      case Filter(Seq(
                     EQUALS(sl1:StringLike, sl2:StringLike),
                     REGEX(sl3:StringLike, sl4:StringLike)), b:BGP) => succeed
       case _ => fail
@@ -194,9 +194,9 @@ class ExprParserSpec extends AnyFlatSpec {
   "Nested filter function" should "return proper nested types" in {
     val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/q17-filter-nested.sparql"), ExprParser.parser(_))
     p.get.value match {
-      case Filter(List(STRSTARTS(STR(VARIABLE("?src")),STRING("ner:")),GT(VARIABLE("?year"), STRING("2015"))),
+      case Filter(Seq(STRSTARTS(STR(VARIABLE("?src")),STRING("ner:")),GT(VARIABLE("?year"), STRING("2015"))),
                   BGP(
-                    List(
+                    Seq(
                       Triple(
                         VARIABLE("?d"),
                         URIVAL("<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>"),

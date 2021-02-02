@@ -82,7 +82,7 @@ class QueryConstructSpec extends AnyFlatSpec {
       """
 
     QueryConstruct.parseADT(query) match {
-      case Construct(vars, bgp, Select(List(VARIABLE("?name"), VARIABLE("?person")),Filter(funcs,expr))) => succeed
+      case Construct(vars, bgp, Select(Seq(VARIABLE("?name"), VARIABLE("?person")),Filter(funcs,expr))) => succeed
       case _ => fail
     }
   }
