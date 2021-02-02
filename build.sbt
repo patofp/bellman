@@ -2,11 +2,16 @@ name := "bellman-algebra"
 organization := "com.github.gsk-aiops"
 version := "0.1.12-SNAPSHOT"
 
-scalaVersion := "2.12.12"
+lazy val scala212 = "2.12.12"
+lazy val scala213 = "2.11.12"
+lazy val supportedScalaVersions = List(scala212, scala213)
+
+scalaVersion := scala212
+crossScalaVersions := supportedScalaVersions
 
 libraryDependencies += "org.apache.jena" % "apache-jena-libs" % "3.17.0" pomOnly()
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.3" % Test
-libraryDependencies += "com.lihaoyi" %% "fastparse" % "2.3.0"
+libraryDependencies += "com.lihaoyi" %% "fastparse" % "2.1.2"
 
 scalastyleFailOnWarning := true
 
