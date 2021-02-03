@@ -2,7 +2,7 @@ package com.gsk.kg.sparql.impl
 
 import org.scalatest.flatspec.AnyFlatSpec
 import com.gsk.kg.sparql.Visitors
-import com.gsk.kg.sparqlparser.QueryConstruct
+import com.gsk.kg.sparqlparser.{QueryConstruct, TestUtils}
 
 class SimpleVisitorSpec extends AnyFlatSpec {
 
@@ -75,6 +75,12 @@ class SimpleVisitorSpec extends AnyFlatSpec {
         }
       """
     val expr = QueryConstruct.parseADT(query)
+    val result = Visitors.dispatch(expr,visitor)
+    assert(expr == QueryConstruct.parseADT(result))
+  }
+
+  "Lit search query" should "work" in {
+    val expr = TestUtils.queryConstruct("/queries/lit-search-2.sparql")
     val result = Visitors.dispatch(expr,visitor)
     assert(expr == QueryConstruct.parseADT(result))
   }

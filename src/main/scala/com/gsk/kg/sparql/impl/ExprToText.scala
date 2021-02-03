@@ -21,7 +21,7 @@ object ExprToText {
         case sf: StringFunc =>
           sf match {
             case STR(s) => s"str(${s.text})"
-            case URI(s) => s.text
+            case URI(s) => s"uri(${s.text})"
             case STRAFTER(s, f) => s"strafter(${s.text}, ${f.text})"
             case CONCAT(appendTo, append) => s"concat(${appendTo.text}, ${append.text})"
           }
