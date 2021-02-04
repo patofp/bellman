@@ -200,10 +200,10 @@ class ExprParserSpec extends AnyFlatSpec {
                       Triple(
                         VARIABLE("?d"),
                         URIVAL("<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>"),
-                        URIVAL("<http://id.gsk.com/dm/1.0/Document>")),
+                        URIVAL("<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>")),
                       Triple(
                         VARIABLE("?d"),
-                        URIVAL("<http://id.gsk.com/dm/1.0/docSource>"),
+                        URIVAL("<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>"),
                         VARIABLE("?src"))))) => succeed
       case _ => fail
     }
