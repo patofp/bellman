@@ -3,8 +3,8 @@ organization := "com.github.gsk-aiops"
 version := "0.1.12-SNAPSHOT"
 
 lazy val scala212 = "2.12.12"
-lazy val scala213 = "2.11.12"
-lazy val supportedScalaVersions = List(scala212, scala213)
+lazy val scala211 = "2.11.12"
+lazy val supportedScalaVersions = List(scala212, scala211)
 
 scalaVersion := scala212
 crossScalaVersions := supportedScalaVersions
