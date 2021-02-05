@@ -27,7 +27,7 @@ inThisBuild(List(
 
 lazy val buildSettings = Seq(
   scalaVersion := Versions("scala212"),
-  crossScalaVersions :=  List(Versions("scala212"), Versions("scala212")),
+  crossScalaVersions :=  List(Versions("scala211"), Versions("scala212")),
   sonatypeProjectHosting := Some(GitHubHosting("gsk-aiops", "bellman-algebra-parser", "johnhuntergskatgmail.com")),
   sonatypeProfileName := "com.github.gsk-aiops",
   artifactName := { (sv: ScalaVersion, module: ModuleID, artifact: Artifact) =>
