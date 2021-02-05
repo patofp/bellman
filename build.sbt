@@ -1,8 +1,15 @@
 import xerial.sbt.Sonatype._
 
-lazy val scala212 = "2.12.12"
-lazy val scala211 = "2.11.12"
-lazy val supportedScalaVersions = List(scala212, scala211)
+lazy val Versions = Map(
+  "kind-projector" -> "0.11.3",
+  "cats"           -> "2.0.0",
+  "jena"           -> "3.17.0",
+  "scalatest"      -> "3.2.3",
+  "fastparse"      -> "2.1.2",
+  "cats"           -> "2.0.0",
+  "scala212"       -> "2.12.12",
+  "scala211"       -> "2.11.12"
+)
 
 inThisBuild(List(
   organization := "com.github.gsk-aiops",
@@ -19,8 +26,8 @@ inThisBuild(List(
 ))
 
 lazy val buildSettings = Seq(
-  scalaVersion := scala212,
-  crossScalaVersions := supportedScalaVersions,
+  scalaVersion := Versions("scala212"),
+  crossScalaVersions :=  List(Versions("scala212"), Versions("scala212")),
   sonatypeProjectHosting := Some(GitHubHosting("gsk-aiops", "bellman-algebra-parser", "johnhuntergskatgmail.com")),
   sonatypeProfileName := "com.github.gsk-aiops",
   artifactName := { (sv: ScalaVersion, module: ModuleID, artifact: Artifact) =>
@@ -34,15 +41,6 @@ lazy val noPublishSettings = Seq(
   publishLocal := {},
   publishArtifact := false,
   skip in publish := true
-)
-
-lazy val Versions = Map(
-  "kind-projector" -> "0.11.3",
-  "cats"           -> "2.0.0",
-  "jena"           -> "3.17.0",
-  "scalatest"      -> "3.2.3",
-  "fastparse"      -> "2.1.2",
-  "cats"           -> "2.0.0"
 )
 
 lazy val compilerPlugins = Seq(
