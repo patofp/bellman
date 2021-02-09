@@ -2,7 +2,7 @@
 
 Bellman executes SparQL queries in Spark.
 
-## modules
+## Modules
 
 ### Algebra parser
 
@@ -14,7 +14,7 @@ ADTs can later be used to generate queries for the target system.
 The Spark engine runs after the algebra parser, and produces Spark
 jobs that execute your SparQL queries.
 
-## publishing
+## Publishing
 
 In order to publish a new version of the project one must create a new
 release in Github.  The release version must be of the format `v*.*.*`.
