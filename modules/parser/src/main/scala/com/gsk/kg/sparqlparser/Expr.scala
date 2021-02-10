@@ -15,4 +15,6 @@ object Expr {
   final case class Graph(g:StringVal, e:Expr) extends Expr
   final case class Construct(vars: Seq[VARIABLE], bgp: BGP, r:Expr) extends Expr
   final case class Select(vars: Seq[VARIABLE], r:Expr) extends Expr
+  final case class OffsetLimit(offset: Option[Long], limit: Option[Long], r:Expr) extends Expr
+  final case class Distinct(r:Expr) extends Expr
 }

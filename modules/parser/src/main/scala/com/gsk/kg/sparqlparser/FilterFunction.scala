@@ -8,6 +8,8 @@ object FilterFunction {
   final case class STRSTARTS(l:StringLike, r:StringLike) extends FilterFunction
   final case class GT(l:StringLike, r:StringLike) extends FilterFunction
   final case class LT(l:StringLike, r:StringLike) extends FilterFunction
+  final case class NEGATE(s: StringLike) extends FilterFunction
+  final case class STRFUN(f: StringLike) extends FilterFunction
 }
 
 
