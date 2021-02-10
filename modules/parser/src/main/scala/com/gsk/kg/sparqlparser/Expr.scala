@@ -1,7 +1,9 @@
 package com.gsk.kg.sparqlparser
-import com.gsk.kg.sparqlparser.StringVal.VARIABLE
 
-sealed trait Expr
+import com.gsk.kg.sparqlparser.StringVal.VARIABLE
+import higherkindness.droste.macros.deriveFixedPoint
+
+@deriveFixedPoint sealed trait Expr
 
 object Expr {
   final case class BGP(triples:Seq[Triple]) extends Expr
