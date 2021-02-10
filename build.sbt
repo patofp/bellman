@@ -8,7 +8,9 @@ lazy val Versions = Map(
   "fastparse"      -> "2.1.2",
   "cats"           -> "2.0.0",
   "scala212"       -> "2.12.12",
-  "scala211"       -> "2.11.12"
+  "scala211"       -> "2.11.12",
+  "droste"         -> "0.8.0",
+  "spark"          -> "2.4.7",
 )
 
 inThisBuild(List(
@@ -45,12 +47,16 @@ lazy val noPublishSettings = Seq(
 
 lazy val compilerPlugins = Seq(
   libraryDependencies ++= Seq(
-    compilerPlugin("org.typelevel" %% "kind-projector" % Versions("kind-projector") cross CrossVersion.full)
+    compilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full),
+    compilerPlugin("org.typelevel" %% "kind-projector" % Versions("kind-projector") cross CrossVersion.full),
   )
 )
 
 lazy val commonDependencies = Seq(
   libraryDependencies ++= Seq(
+    "org.typelevel" %% "cats-core" % Versions("cats"),
+    "io.higherkindness" %% "droste-core" % Versions("droste"),
+    "io.higherkindness" %% "droste-macros" % Versions("droste"),
     "org.scalatest" %% "scalatest" % Versions("scalatest") % Test,
   )
 )
@@ -83,8 +89,10 @@ lazy val `bellman-spark-engine` = project
   .settings(compilerPlugins)
   .settings(
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "cats-core" % Versions("cats")
+      "org.apache.spark"  %% "spark-core"    % Versions("spark"),
+      "org.apache.spark"  %% "spark-sql"     % Versions("spark")
     )
   )
+  .dependsOn(`bellman-algebra-parser`)
 
 addCommandAlias("ci-test", ";scalastyle ;+test")
