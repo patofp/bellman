@@ -10,6 +10,7 @@ object FilterFunctionParser {
   def strstarts[_:P]:P[Unit] = P("strstarts")
   def gt[_:P]:P[Unit] = P(">")
   def lt[_:P]:P[Unit] = P("<")
+  def negate[_:P]:P[Unit] = P("!")
 
   def equalsParen[_:P]:P[EQUALS] =
     P("(" ~ equals ~ (StringFuncParser.parser | StringValParser.tripleValParser) ~
@@ -40,10 +41,19 @@ object FilterFunctionParser {
       (StringFuncParser.parser | StringValParser.tripleValParser) ~ ")").map(
       f => LT(f._1, f._2)
     )
+
+  def negateParen[_:P]:P[NEGATE] =
+    P("(" ~ negate ~(StringFuncParser.parser | StringValParser.tripleValParser) ~ ")").map(NEGATE(_))
+
+  def strfun[_:P]:P[STRFUN] =
+    P(StringFuncParser.parser).map(STRFUN(_))
+
   def parser[_:P]:P[FilterFunction] =
     P(equalsParen
     | regexParen
     | strstartsParen
     | gtParen
-    | ltParen)
+    | ltParen
+    | negateParen
+    | strfun)
 }

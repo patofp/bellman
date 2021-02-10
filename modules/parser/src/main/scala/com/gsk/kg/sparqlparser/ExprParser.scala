@@ -17,10 +17,20 @@ object ExprParser {
   def join[_:P]:P[Unit] = P("join")
   def graph[_:P]:P[Unit] = P("graph")
   def select[_:P]:P[Unit] = P("project")
+  def offsetLimit[_:P]:P[Unit] = P("slice")
+  def distinct[_:P]:P[Unit] = P("distinct")
 
   def selectParen[_:P]:P[Select] = P("(" ~ select ~ "(" ~ (StringValParser.variable).rep(1) ~ ")" ~ graphPattern ~ ")")
     .map(p => Select(p._1, p._2))
 
+  def offsetLimitParen[_:P]:P[OffsetLimit] = P("(" ~ offsetLimit ~
+    StringValParser.optionLong ~
+    StringValParser.optionLong ~
+    graphPattern ~ ")").map{ ops =>
+    OffsetLimit(ops._1,ops._2, ops._3)
+  }
+
+  def distinctParen[_:P]:P[Distinct] = P("(" ~ distinct ~ graphPattern).map(Distinct(_))
 
   def triple[_:P]:P[Triple] =
     P("(triple" ~
@@ -71,7 +81,9 @@ object ExprParser {
 
   def graphPattern[_:P]:P[Expr] =
     P(selectParen
-      |leftJoinParen
+      | offsetLimitParen
+      | distinctParen
+      | leftJoinParen
       | filteredLeftJoinParen
       | joinParen
       | graphParen

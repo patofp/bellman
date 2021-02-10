@@ -26,6 +26,10 @@ trait Visitor[T] {
   def visitConstruct(vars: Seq[VARIABLE], bgp: BGP, d: T): T
 
   def visitSelect(vars: Seq[VARIABLE], d: T): T
+
+  def visitOffsetLimit(off: Option[Long], lmt: Option[Long], d: T): T
+
+  def visitDistinct(e: T): T
 }
 
 object Visitors {
@@ -63,6 +67,11 @@ object Visitors {
         visitor.visitConstruct(vars, bgp, dispatch(r, visitor))
       case Select(vars, r) =>
         visitor.visitSelect(vars, dispatch(r, visitor))
+      case OffsetLimit(offset,limit, r) =>
+        visitor.visitOffsetLimit(offset, limit, dispatch(r, visitor))
+      case Distinct(r) =>
+        visitor.visitDistinct(dispatch(r,visitor))
+
     }
   }
 }
