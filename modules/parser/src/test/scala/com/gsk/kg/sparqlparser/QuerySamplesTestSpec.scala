@@ -152,20 +152,19 @@ class QuerySamplesTestSpec extends AnyFlatSpec {
     }
   }
 
-  // TODO: Comment out for now, need to work on parser since when BIND in different position Jena generates different representation
-//  "Test BIND in another position in the query" should "parse to same as q12" in {
-//    val query = QuerySamples.q13
-//    val expr = QueryConstruct.parseADT(query)
-//    println(expr)
-//    expr match {
-//      case Select(vs, Filter(funcs,Extend(to,from,BGP(_)))) =>
-//        assert(vs.nonEmpty && vs.size == 3)
-//        assert(funcs.size == 1)
-//        assert(to == VARIABLE("?o"))
-//      case _ =>
-//        fail
-//    }
-//  }
+  "Test BIND in another position in the query" should "parse to same as q12" ignore {
+    val query = QuerySamples.q13
+    val expr = QueryConstruct.parseADT(query)
+    println(expr)
+    expr match {
+      case Select(vs, Filter(funcs,Extend(to,from,BGP(_)))) =>
+        assert(vs.nonEmpty && vs.size == 3)
+        assert(funcs.size == 1)
+        assert(to == VARIABLE("?o"))
+      case _ =>
+        fail
+    }
+  }
 
   "Test union" should "parse" in {
     val query = QuerySamples.q14
