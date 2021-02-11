@@ -30,7 +30,6 @@ class EngineSpec extends AnyFlatSpec with Matchers {
   ).toDF("s", "p", "o")
 
   "An Engine" should "perform query operations in the dataframe" in {
-
     val expr = QueryConstruct.parseADT("""
       SELECT
         ?s ?p ?o
@@ -39,7 +38,7 @@ class EngineSpec extends AnyFlatSpec with Matchers {
       }
       """)
 
-    Engine.evaluate(df, expr).collect() shouldEqual df.collect()
+    Engine.evaluate(df, expr).right.get.collect() shouldEqual df.collect()
   }
 
 }
