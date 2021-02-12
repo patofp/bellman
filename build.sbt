@@ -77,8 +77,9 @@ lazy val `bellman-algebra-parser` = project
   .settings(compilerPlugins)
   .settings(
     libraryDependencies ++= Seq(
-      "org.apache.jena" % "apache-jena-libs" % Versions("jena")excludeAll(
-        ExclusionRule(organization = "com.fasterxml.jackson.core"),
+      "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.4",
+      "org.apache.jena" % "jena-arq" % Versions("jena") excludeAll(
+        ExclusionRule(organization = "com.fasterxml.jackson.core")
       ),
       "com.lihaoyi" %% "fastparse" % Versions("fastparse"),
     )

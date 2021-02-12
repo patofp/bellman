@@ -1,7 +1,9 @@
 package com.gsk.kg.engine
 
 import cats.data.StateT
-import cats.implicits._
+import cats.instances.all._
+import cats.syntax.either._
+import cats.syntax.applicative._
 
 import org.apache.spark.sql.DataFrame
 
