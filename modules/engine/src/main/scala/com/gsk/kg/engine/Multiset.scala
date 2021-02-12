@@ -11,6 +11,12 @@ final case class Multiset(
   def join(other: Multiset) = (this, other) match {
     case (a, b) if a.isEmpty => b
     case (a, b) if b.isEmpty => a
+    case (Multiset(aBindings, aDF), Multiset(bBindings, bDF)) if aBindings.intersect(bBindings).isEmpty =>
+      val df = aDF.as("a")
+        .crossJoin(bDF.as("b"))
+
+      Multiset(aBindings.union(bBindings), df)
+
     case (a, b) =>
       val common = a.bindings.intersect(b.bindings)
       val df = a.dataframe.as("a")
