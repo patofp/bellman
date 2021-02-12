@@ -2,6 +2,9 @@ package com.gsk.kg.engine
 
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
 import org.apache.spark.sql.DataFrame
+import cats.kernel.Semigroup
+import org.apache.spark.sql.SQLContext
+import cats.kernel.Monoid
 
 final case class Multiset(
   bindings: Set[VARIABLE],
@@ -26,5 +29,18 @@ final case class Multiset(
   }
 
   def isEmpty: Boolean = bindings.isEmpty && dataframe.isEmpty
+
+}
+
+object Multiset {
+
+  implicit val semigroup: Semigroup[Multiset] = new Semigroup[Multiset] {
+    def combine(x: Multiset, y: Multiset): Multiset = x.join(y)
+  }
+
+  implicit def monoid(implicit sc: SQLContext): Monoid[Multiset] = new Monoid[Multiset] {
+    def combine(x: Multiset, y: Multiset): Multiset = x.join(y)
+    def empty: Multiset = Multiset(Set.empty, sc.emptyDataFrame)
+  }
 
 }

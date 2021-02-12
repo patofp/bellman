@@ -7,7 +7,14 @@ import higherkindness.droste.macros.deriveFixedPoint
 
 object Expr {
   final case class BGP(triples:Seq[Triple]) extends Expr
-  final case class Triple(s:StringVal, p:StringVal, o:StringVal) extends Expr
+  final case class Triple(s:StringVal, p:StringVal, o:StringVal) extends Expr {
+    def getPredicates: List[(StringVal, String)] = {
+      List((s, "s"),(p, "p"),(o, "o")).filterNot(_._1.isVariable)
+    }
+    def getVariables: List[(StringVal, String)] = {
+      List((s, "s"),(p, "p"),(o, "o")).filter(_._1.isVariable)
+    }
+  }
   final case class LeftJoin(l:Expr, r:Expr) extends Expr
   final case class FilteredLeftJoin(l:Expr, r:Expr, f:FilterFunction) extends Expr
   final case class Union(l:Expr, r:Expr) extends Expr

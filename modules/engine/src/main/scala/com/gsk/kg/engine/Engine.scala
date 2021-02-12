@@ -1,7 +1,7 @@
 package com.gsk.kg.engine
 
 import cats.data.StateT
-import cats.instances.either._
+import cats.implicits._
 
 import org.apache.spark.sql.DataFrame
 
@@ -10,6 +10,10 @@ import com.gsk.kg.sparqlparser.Expr.fixedpoint._
 
 import higherkindness.droste._
 import cats.data.IndexedStateT
+import org.apache.spark.sql.SQLContext
+import com.gsk.kg.sparqlparser.StringVal
+import com.gsk.kg.engine.Multiset._
+import cats.Foldable
 
 object Engine {
 
@@ -20,27 +24,70 @@ object Engine {
   }
 
   type Result[A] = Either[EngineError, A]
+  val Result = Either
   type M[A] = StateT[Result, DataFrame, A]
 
-  val evaluateAlgebraM: AlgebraM[M, ExprF, DataFrame] =
-    AlgebraM[M, ExprF, DataFrame] {
-      case BGPF(triples)                => StateT.get
-      case TripleF(s, p, o)             => StateT.get
-      case LeftJoinF(l, r)              => StateT.get
-      case FilteredLeftJoinF(l, r, f)   => StateT.get
-      case UnionF(l, r)                 => StateT.get
-      case ExtendF(bindTo, bindFrom, r) => StateT.get
-      case FilterF(funcs, expr)         => StateT.get
-      case JoinF(l, r)                  => StateT.get
-      case GraphF(g, e)                 => StateT.get
-      case ConstructF(vars, bgp, r)     => StateT.get
-      case SelectF(vars, r)             => StateT.get
+  def evaluateAlgebraM(implicit sc: SQLContext): AlgebraM[M, ExprF, Multiset] =
+    AlgebraM[M, ExprF, Multiset] {
+      case BGPF(triples) =>
+        import sc.implicits._
+        StateT.get[Result, DataFrame].map { df: DataFrame =>
+          Foldable[List].fold(
+            triples.toList.map({ triple =>
+              val current = df
+              triple.getPredicates.foreach {
+                case (value, "s") =>
+                  current.filter(r => r(0) == value.s).drop("s")
+                case (value, "p") =>
+                  current.filter(r => r(1) == value.s).drop("p")
+                case (value, "o") =>
+                  current.filter(r => r(2) == value.s).drop("o")
+                case _ => current
+              }
+              val variables = triple.getVariables
+              val selected =
+                current.select(variables.map(v => $"${v._2}".as(v._1.s)): _*)
+
+              Multiset(
+                variables.map(_._1.asInstanceOf[StringVal.VARIABLE]).toSet,
+                selected
+              )
+            })
+          )
+
+        }
+      case TripleF(s, p, o) =>
+        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
+      case LeftJoinF(l, r) =>
+        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
+      case FilteredLeftJoinF(l, r, f) =>
+        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
+      case UnionF(l, r) =>
+        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
+      case ExtendF(bindTo, bindFrom, r) =>
+        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
+      case FilterF(funcs, expr) =>
+        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
+      case JoinF(l, r) =>
+        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
+      case GraphF(g, e) =>
+        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
+      case ConstructF(vars, bgp, r) =>
+        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
+      case SelectF(vars, r) =>
+        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
     }
 
-  def evaluate(dataframe: DataFrame, query: Expr): Result[DataFrame] = {
-    val eval = scheme.cataM[M, ExprF, Expr, DataFrame](evaluateAlgebraM)
+  def evaluate(
+      dataframe: DataFrame,
+      query: Expr
+  )(
+    implicit sc: SQLContext
+  ): Result[DataFrame] = {
+    val eval =
+      scheme.cataM[M, ExprF, Expr, Multiset](evaluateAlgebraM)
 
-    eval(query).runA(dataframe)
+    eval(query).runA(dataframe).map(_.dataframe)
   }
 
 }
