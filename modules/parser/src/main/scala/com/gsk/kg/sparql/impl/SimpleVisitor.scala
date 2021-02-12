@@ -42,7 +42,7 @@ class SimpleVisitor extends Visitor[String] {
     s"GRAPH ${g.text} {\n${d}}\n"
   }
 
-  override def visitConstruct(vars: Seq[StringVal.VARIABLE], bgp: Expr.BGP, d: String): String = { //construct
+  def toConstruct(vars: Seq[StringVal.VARIABLE], bgp: Expr.BGP, d: String): String = { //construct
     val toCons = this.visitBGP(bgp.triples.map(this.visitTriple(_)))
     s"CONSTRUCT {\n$toCons} WHERE {\n${d}\n}\n"
   }
@@ -58,6 +58,8 @@ class SimpleVisitor extends Visitor[String] {
   }
 
   override def visitDistinct(e: String): String = s"DISTINCT ${e} "
+
+  override def visitOpNil: String = ""
 }
 
 object SimpleVisitor {

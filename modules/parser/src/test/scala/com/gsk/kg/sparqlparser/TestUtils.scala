@@ -15,10 +15,16 @@ object TestUtils {
     Algebra.compile(query).toString
   }
 
-  def queryConstruct(fileLoc: String): Expr = {
+  def queryAlgebra(fileLoc: String): Expr = {
     val q = readOutputFile(fileLoc)
     QueryConstruct.parseADT(q)
   }
+
+  def query(fileLoc: String): Query = {
+    val q = readOutputFile(fileLoc)
+    QueryConstruct.parse(q)
+  }
+
 
   def readOutputFile(fileLoc: String): String = {
     val path = getClass.getResource(fileLoc).getPath

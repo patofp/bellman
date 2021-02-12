@@ -1,6 +1,6 @@
 package com.gsk.kg.sparqlparser
 
-sealed trait StringLike
+sealed trait StringLike extends Expression
 
 sealed trait StringFunc extends StringLike
 sealed trait StringVal extends StringLike
@@ -11,6 +11,7 @@ object StringFunc {
   final case class STR(s:StringLike) extends StringFunc
   final case class STRAFTER(s:StringLike, f:StringLike) extends StringFunc
   final case class ISBLANK(s: StringLike) extends StringFunc
+  final case class REPLACE(st: StringLike, pattern: StringLike, by: StringLike) extends StringFunc
 }
 
 object StringVal {

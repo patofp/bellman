@@ -2,23 +2,26 @@ package com.gsk.kg.sparqlparser
 
 import com.gsk.kg.sparqlparser.StringVal._
 import com.gsk.kg.sparqlparser.Expr._
+import com.gsk.kg.sparqlparser.Query._
 import com.gsk.kg.sparqlparser.FilterFunction._
 import com.gsk.kg.sparqlparser.StringFunc._
 import fastparse.Parsed.{Failure, Success}
 import org.apache.jena.graph.Node
+import org.apache.jena.query
 import org.apache.jena.query.QueryFactory
 import org.apache.jena.sparql.algebra.Algebra
 import org.apache.jena.sparql.core.Quad
+
 import collection.JavaConverters._
 
 object QueryConstruct {
 
   case class SparqlParsingError(s: String) extends Exception(s)
 
-  def parseADT(sparql: String): Expr = {
+  def parse(sparql: String): Query = {
     val query = QueryFactory.create(sparql)
-    val compiled = Algebra.compile(query).toString()
-    val parsed = fastparse.parse(compiled, ExprParser.parser(_))
+    val compiled = Algebra.compile(query)
+    val parsed = fastparse.parse(compiled.toString, ExprParser.parser(_))
     val algebra =  parsed match {
       case Success(value, index) => value
       case Failure(str, i, extra) =>
@@ -28,14 +31,27 @@ object QueryConstruct {
     }
     if (query.isConstructType) {
       val template = query.getConstructTemplate
-      val vars = query.getProjectVars.asScala.map(v => VARIABLE(v.toString())).toSeq
+      val vars = getVars(query)
       val bgp = toBGP(template.getQuads.asScala.toSeq)
       Construct(vars, bgp, algebra)
     } else if (query.isSelectType) {
-      algebra
+      val vars = getVars(query)
+      Select(vars,algebra)
+    } else if (query.isDescribeType) {
+      Describe(getVars(query), algebra)
+    } else if (query.isAskType) {
+      Ask(algebra)
     } else {
       throw SparqlParsingError(s"The query type: ${query.queryType()} is not supported yet")
     }
+  }
+
+  private def getVars(query: org.apache.jena.query.Query): Seq[VARIABLE] = {
+    query.getProjectVars.asScala.map(v => VARIABLE(v.toString())).toSeq
+  }
+
+  def parseADT(sparql: String): Expr = {
+    parse(sparql).r
   }
 
   def getAllVariableNames(bgp: BGP): Set[String] = {

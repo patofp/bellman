@@ -20,8 +20,10 @@ object ExprParser {
   def offsetLimit[_:P]:P[Unit] = P("slice")
   def distinct[_:P]:P[Unit] = P("distinct")
 
-  def selectParen[_:P]:P[Select] = P("(" ~ select ~ "(" ~ (StringValParser.variable).rep(1) ~ ")" ~ graphPattern ~ ")")
-    .map(p => Select(p._1, p._2))
+  def opNull[_:P]:P[OpNil] = P("(null)").map(_ => OpNil())
+
+  def selectParen[_:P]:P[Project] = P("(" ~ select ~ "(" ~ (StringValParser.variable).rep(1) ~ ")" ~ graphPattern ~ ")")
+    .map(p => Project(p._1, p._2))
 
   def offsetLimitParen[_:P]:P[OffsetLimit] = P("(" ~ offsetLimit ~
     StringValParser.optionLong ~
@@ -91,7 +93,8 @@ object ExprParser {
       | unionParen
       | extendParen
       | filterSingleParen
-      | filterListParen)
+      | filterListParen
+      | opNull)
 
   def parser[_:P]:P[Expr] = P(graphPattern)
 }

@@ -13,6 +13,7 @@ object StringFuncParser {
   def str[_:P]:P[Unit] = P("str")
   def strafter[_:P]:P[Unit] = P("strafter")
   def isBlank[_:P]:P[Unit] = P("isBlank")
+  def replace[_:P]:P[Unit] = P("replace")
 
   def uriParen[_:P]:P[URI] = P("(" ~ uri ~ stringPatterns ~ ")").map{ s => URI(s)}
   def concatParen[_:P]:P[CONCAT] = ("(" ~ concat ~ stringPatterns ~ stringPatterns ~ ")").map{
@@ -25,12 +26,17 @@ object StringFuncParser {
 
   def isBlankParen[_:P]:P[ISBLANK] = P("(" ~ isBlank ~ stringPatterns ~ ")").map(ISBLANK(_))
 
+  def replaceParen[_:P]:P[REPLACE] = P("(" ~ replace ~ stringPatterns ~ stringPatterns ~ stringPatterns ~")").map{
+    s => REPLACE(s._1, s._2, s._3)
+  }
+
   def stringPatterns[_:P]:P[StringLike] =
     P(uriParen
       | concatParen
       | strParen
       | strafterParen
       | isBlankParen
+      | replaceParen
       | StringValParser.string
       | StringValParser.variable)
 
