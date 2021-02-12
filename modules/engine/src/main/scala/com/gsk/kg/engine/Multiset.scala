@@ -26,9 +26,9 @@ final case class Multiset(
     * instead.
     *
     * @param other
-    * @return
+    * @return the join result of both multisets
     */
-  def join(other: Multiset) = (this, other) match {
+  def join(other: Multiset): Multiset = (this, other) match {
     case (a, b) if a.isEmpty => b
     case (a, b) if b.isEmpty => a
     case (Multiset(aBindings, aDF), Multiset(bBindings, bDF)) if aBindings.intersect(bBindings).isEmpty =>
@@ -44,6 +44,11 @@ final case class Multiset(
 
   def isEmpty: Boolean = bindings.isEmpty && dataframe.isEmpty
 
+  def select(vars: VARIABLE*): Multiset =
+    Multiset(
+      bindings.intersect(vars.toSet),
+      dataframe.select(vars.map(v => dataframe(v.s)): _*)
+    )
 }
 
 object Multiset {

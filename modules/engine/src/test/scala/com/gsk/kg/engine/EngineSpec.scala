@@ -11,6 +11,7 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.DataFrame
 import org.scalatest.BeforeAndAfterAll
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
+import org.apache.spark.sql.Row
 
 class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
@@ -18,18 +19,19 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
   override implicit def enableHiveSupport: Boolean = false
 
-  "An Engine" should "perform query operations in the dataframe" in {
-    import sqlContext.implicits._
-
-    val df: DataFrame = Seq(
+  val dfList = List(
       (
         "test",
-        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-        "http://id.gsk.com/dm/1.0/Document"
+        "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+        "<http://id.gsk.com/dm/1.0/Document>"
       ),
-      ("test", "http://id.gsk.com/dm/1.0/docSource", "source")
-    ).toDF("s", "p", "o")
+      ("test", "<http://id.gsk.com/dm/1.0/docSource>", "source")
+    )
 
+  "Engine" should "perform query operations in the dataframe" in {
+    import sqlContext.implicits._
+
+    val df = dfList.toDF("s", "p", "o")
     val expr = QueryConstruct.parseADT("""
       SELECT
         ?s ?p ?o
@@ -39,6 +41,23 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
       """)
 
     Engine.evaluate(df, expr).right.get.collect() shouldEqual df.collect()
+  }
+
+  it should "execute a query with two dependent BGPs" in {
+    import sqlContext.implicits._
+
+    val df: DataFrame = dfList.toDF("s", "p", "o")
+
+    val expr = QueryConstruct.parseADT("""
+      SELECT
+        ?d ?src
+      WHERE {
+        ?d a <http://id.gsk.com/dm/1.0/Document> .
+        ?d <http://id.gsk.com/dm/1.0/docSource> ?src
+      }
+      """)
+
+    Engine.evaluate(df, expr).right.get.collect() shouldEqual Array(Row("test", "source"))
   }
 
 }
