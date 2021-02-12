@@ -1,16 +1,17 @@
 import xerial.sbt.Sonatype._
 
 lazy val Versions = Map(
-  "kind-projector" -> "0.11.3",
-  "cats"           -> "2.0.0",
-  "jena"           -> "3.17.0",
-  "scalatest"      -> "3.2.3",
-  "fastparse"      -> "2.1.2",
-  "cats"           -> "2.0.0",
-  "scala212"       -> "2.12.12",
-  "scala211"       -> "2.11.12",
-  "droste"         -> "0.8.0",
-  "spark"          -> "2.4.7",
+  "kind-projector"     -> "0.11.3",
+  "cats"               -> "2.0.0",
+  "jena"               -> "3.17.0",
+  "scalatest"          -> "3.2.3",
+  "fastparse"          -> "2.1.2",
+  "cats"               -> "2.0.0",
+  "scala212"           -> "2.12.12",
+  "scala211"           -> "2.11.12",
+  "droste"             -> "0.8.0",
+  "spark"              -> "2.4.7",
+  "spark-testing-base" -> "2.4.5_0.14.0"
 )
 
 inThisBuild(List(
@@ -91,7 +92,8 @@ lazy val `bellman-spark-engine` = project
   .settings(compilerPlugins)
   .settings(
     libraryDependencies ++= Seq(
-      "org.apache.spark"  %% "spark-sql"     % Versions("spark"),
+      "org.apache.spark"  %% "spark-sql"          % Versions("spark"),
+      "com.holdenkarau"   %% "spark-testing-base" % Versions("spark-testing-base") % Test
     )
   )
   .dependsOn(`bellman-algebra-parser`)

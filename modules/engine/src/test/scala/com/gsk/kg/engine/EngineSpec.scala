@@ -10,31 +10,26 @@ import com.gsk.kg.sparqlparser.QueryConstruct
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.DataFrame
 import org.scalatest.BeforeAndAfterAll
+import com.holdenkarau.spark.testing.DataFrameSuiteBase
 
-class EngineSpec extends AnyFlatSpec with Matchers with BeforeAndAfterAll {
+class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
-  val spark = SparkSession
-    .builder()
-    .appName("Spark SQL basic example")
-    .config("spark.master", "local")
-    .getOrCreate()
+  override implicit def reuseContextIfPossible: Boolean = true
 
-  import spark.implicits._
-
-  val df: DataFrame = Seq(
-    (
-      "test",
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-      "http://id.gsk.com/dm/1.0/Document"
-    ),
-    ("test", "http://id.gsk.com/dm/1.0/docSource", "source")
-    ).toDF("s", "p", "o")
-
-  override protected def afterAll(): Unit = {
-    spark.stop()
-  }
+  override implicit def enableHiveSupport: Boolean = false
 
   "An Engine" should "perform query operations in the dataframe" in {
+    import sqlContext.implicits._
+
+    val df: DataFrame = Seq(
+      (
+        "test",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "http://id.gsk.com/dm/1.0/Document"
+      ),
+      ("test", "http://id.gsk.com/dm/1.0/docSource", "source")
+    ).toDF("s", "p", "o")
+
     val expr = QueryConstruct.parseADT("""
       SELECT
         ?s ?p ?o

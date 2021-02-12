@@ -11,6 +11,12 @@ final case class Multiset(
   def join(other: Multiset) = (this, other) match {
     case (a, b) if a.isEmpty => b
     case (a, b) if b.isEmpty => a
+    case (a, b) =>
+      val common = a.bindings.union(b.bindings)
+      val df = a.dataframe.as("a")
+        .join(b.dataframe.as("b"), common.map(_.s).toSeq)
+
+      Multiset(common, df)
   }
 
   def isEmpty: Boolean = bindings.isEmpty && dataframe.isEmpty

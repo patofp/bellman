@@ -7,40 +7,49 @@ import org.scalatest.funsuite.AnyFunSuite
 import org.apache.spark.sql.Dataset
 import org.scalatest.matchers.should.Matchers
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
+import com.holdenkarau.spark.testing.DataFrameSuiteBase
 
-class MultisetSpec extends AnyFlatSpec with Matchers with BeforeAndAfterAll {
+class MultisetSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
-  val spark = SparkSession
-    .builder()
-    .appName("Spark SQL basic example")
-    .config("spark.master", "local")
-    .getOrCreate()
+  override implicit def reuseContextIfPossible: Boolean = true
 
-  import spark.implicits._
-
-  override protected def afterAll(): Unit = {
-    spark.stop()
-  }
+  override implicit def enableHiveSupport: Boolean = false
 
   "Multiset.join empty" should "join two empty multisets together" in {
     val ms1 = Multiset(Set.empty, spark.emptyDataFrame)
     val ms2 = Multiset(Set.empty, spark.emptyDataFrame)
 
-    ms1.join(ms2) shouldEqual Multiset(Set.empty, spark.emptyDataFrame)
+    assertMultisetEquals(ms1.join(ms2), Multiset(Set.empty, spark.emptyDataFrame))
   }
 
   it should "join other nonempty multiset on the right" in {
+    import sqlContext.implicits._
     val empty = Multiset(Set.empty, spark.emptyDataFrame)
     val nonEmpty = Multiset(Set(VARIABLE("d")), Seq("test1", "test2").toDF("d"))
 
-    empty.join(nonEmpty) shouldEqual nonEmpty
+    assertMultisetEquals(empty.join(nonEmpty), nonEmpty)
   }
 
   it should "join other nonempty multiset on the left" in {
+    import sqlContext.implicits._
     val empty = Multiset(Set.empty, spark.emptyDataFrame)
     val nonEmpty = Multiset(Set(VARIABLE("d")), Seq("test1", "test2").toDF("d"))
 
-    nonEmpty.join(empty) shouldEqual nonEmpty
+    assertMultisetEquals(nonEmpty.join(empty), nonEmpty)
+  }
+
+  "Multiset.join" should "join other multiset when they share one binding" in {
+    import sqlContext.implicits._
+    val variable = VARIABLE("d")
+    val ms1 = Multiset(Set(variable), List("test1", "test2").toDF("d"))
+    val ms2 = Multiset(Set(variable), List("test1", "test3").toDF("d"))
+
+    assertMultisetEquals(ms1.join(ms2), Multiset(Set(variable), List("test1").toDF("d")))
+  }
+
+  def assertMultisetEquals(ms1: Multiset, ms2: Multiset): Unit = {
+    assert(ms1.bindings === ms2.bindings, "bindings are different")
+    assert(ms1.dataframe.collect === ms2.dataframe.collect, "dataframes are different")
   }
 
 }
