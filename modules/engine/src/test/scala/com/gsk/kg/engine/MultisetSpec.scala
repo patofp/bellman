@@ -38,13 +38,24 @@ class MultisetSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     assertMultisetEquals(nonEmpty.join(empty), nonEmpty)
   }
 
-  "Multiset.join" should "join other multiset when they share one binding" in {
+  "Multiset.join" should "join other multiset when they have both the same single binding" in {
     import sqlContext.implicits._
     val variable = VARIABLE("d")
     val ms1 = Multiset(Set(variable), List("test1", "test2").toDF("d"))
     val ms2 = Multiset(Set(variable), List("test1", "test3").toDF("d"))
 
     assertMultisetEquals(ms1.join(ms2), Multiset(Set(variable), List("test1").toDF("d")))
+  }
+
+  "Multiset.join" should "join other multiset when they share one binding" in {
+    import sqlContext.implicits._
+    val d = VARIABLE("d")
+    val e = VARIABLE("e")
+    val f = VARIABLE("f")
+    val ms1 = Multiset(Set(d, e), List(("test1", 234), ("test2", 123)).toDF(d.s, e.s))
+    val ms2 = Multiset(Set(d, f), List(("test1", "hello"), ("test3", "goodbye")).toDF(d.s, f.s))
+
+    assertMultisetEquals(ms1.join(ms2), Multiset(Set(d, e, f), List(("test1", 234, "hello")).toDF("d", "e", "f")))
   }
 
   def assertMultisetEquals(ms1: Multiset, ms2: Multiset): Unit = {
