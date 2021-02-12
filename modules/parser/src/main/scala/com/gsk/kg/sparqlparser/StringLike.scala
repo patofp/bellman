@@ -5,7 +5,7 @@ sealed trait StringLike
 sealed trait StringFunc extends StringLike
 sealed trait StringVal extends StringLike {
   val s: String
-  def isVariable = this match {
+  def isVariable: Boolean = this match {
     case StringVal.STRING(s) => false
     case StringVal.NUM(s) => false
     case StringVal.VARIABLE(s) => true
