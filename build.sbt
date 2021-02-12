@@ -76,7 +76,9 @@ lazy val `bellman-algebra-parser` = project
   .settings(compilerPlugins)
   .settings(
     libraryDependencies ++= Seq(
-      "org.apache.jena" % "apache-jena-libs" % Versions("jena") pomOnly(),
+      "org.apache.jena" % "apache-jena-libs" % Versions("jena")excludeAll(
+        ExclusionRule(organization = "com.fasterxml.jackson.core"),
+      ),
       "com.lihaoyi" %% "fastparse" % Versions("fastparse"),
     )
   )
@@ -89,8 +91,7 @@ lazy val `bellman-spark-engine` = project
   .settings(compilerPlugins)
   .settings(
     libraryDependencies ++= Seq(
-      "org.apache.spark"  %% "spark-core"    % Versions("spark"),
-      "org.apache.spark"  %% "spark-sql"     % Versions("spark")
+      "org.apache.spark"  %% "spark-sql"     % Versions("spark"),
     )
   )
   .dependsOn(`bellman-algebra-parser`)
