@@ -9,8 +9,9 @@ import org.scalatest.matchers.should.Matchers
 import com.gsk.kg.sparqlparser.QueryConstruct
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.DataFrame
+import org.scalatest.BeforeAndAfterAll
 
-class EngineSpec extends AnyFlatSpec with Matchers {
+class EngineSpec extends AnyFlatSpec with Matchers with BeforeAndAfterAll {
 
   val spark = SparkSession
     .builder()
@@ -27,7 +28,11 @@ class EngineSpec extends AnyFlatSpec with Matchers {
       "http://id.gsk.com/dm/1.0/Document"
     ),
     ("test", "http://id.gsk.com/dm/1.0/docSource", "source")
-  ).toDF("s", "p", "o")
+    ).toDF("s", "p", "o")
+
+  override protected def afterAll(): Unit = {
+    spark.stop()
+  }
 
   "An Engine" should "perform query operations in the dataframe" in {
     val expr = QueryConstruct.parseADT("""

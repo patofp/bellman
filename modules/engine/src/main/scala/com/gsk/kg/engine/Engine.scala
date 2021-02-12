@@ -24,17 +24,17 @@ object Engine {
 
   val evaluateAlgebraM: AlgebraM[M, ExprF, DataFrame] =
     AlgebraM[M, ExprF, DataFrame] {
-      case BGPF(triples)                => StateT.get[Result, DataFrame]
-      case TripleF(s, p, o)             => StateT.get[Result, DataFrame]
-      case LeftJoinF(l, r)              => StateT.get[Result, DataFrame]
-      case FilteredLeftJoinF(l, r, f)   => StateT.get[Result, DataFrame]
-      case UnionF(l, r)                 => StateT.get[Result, DataFrame]
-      case ExtendF(bindTo, bindFrom, r) => StateT.get[Result, DataFrame]
-      case FilterF(funcs, expr)         => StateT.get[Result, DataFrame]
-      case JoinF(l, r)                  => StateT.get[Result, DataFrame]
-      case GraphF(g, e)                 => StateT.get[Result, DataFrame]
-      case ConstructF(vars, bgp, r)     => StateT.get[Result, DataFrame]
-      case SelectF(vars, r)             => StateT.get[Result, DataFrame]
+      case BGPF(triples)                => StateT.get
+      case TripleF(s, p, o)             => StateT.get
+      case LeftJoinF(l, r)              => StateT.get
+      case FilteredLeftJoinF(l, r, f)   => StateT.get
+      case UnionF(l, r)                 => StateT.get
+      case ExtendF(bindTo, bindFrom, r) => StateT.get
+      case FilterF(funcs, expr)         => StateT.get
+      case JoinF(l, r)                  => StateT.get
+      case GraphF(g, e)                 => StateT.get
+      case ConstructF(vars, bgp, r)     => StateT.get
+      case SelectF(vars, r)             => StateT.get
     }
 
   def evaluate(dataframe: DataFrame, query: Expr): Result[DataFrame] = {
