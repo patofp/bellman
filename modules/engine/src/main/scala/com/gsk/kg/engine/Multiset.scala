@@ -8,6 +8,11 @@ final case class Multiset(
   dataframe: DataFrame
 ) {
 
-  def join(other: Multiset) = this
+  def join(other: Multiset) = (this, other) match {
+    case (a, b) if a.isEmpty => b
+    case (a, b) if b.isEmpty => a
+  }
+
+  def isEmpty: Boolean = bindings.isEmpty && dataframe.isEmpty
 
 }

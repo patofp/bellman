@@ -6,6 +6,7 @@ import org.scalatest.BeforeAndAfterAll
 import org.scalatest.funsuite.AnyFunSuite
 import org.apache.spark.sql.Dataset
 import org.scalatest.matchers.should.Matchers
+import com.gsk.kg.sparqlparser.StringVal.VARIABLE
 
 class MultisetSpec extends AnyFlatSpec with Matchers with BeforeAndAfterAll {
 
@@ -21,11 +22,25 @@ class MultisetSpec extends AnyFlatSpec with Matchers with BeforeAndAfterAll {
     spark.stop()
   }
 
-  "Multiset.join" should "join two empty multisets together" in {
+  "Multiset.join empty" should "join two empty multisets together" in {
     val ms1 = Multiset(Set.empty, spark.emptyDataFrame)
     val ms2 = Multiset(Set.empty, spark.emptyDataFrame)
 
     ms1.join(ms2) shouldEqual Multiset(Set.empty, spark.emptyDataFrame)
+  }
+
+  it should "join other nonempty multiset on the right" in {
+    val empty = Multiset(Set.empty, spark.emptyDataFrame)
+    val nonEmpty = Multiset(Set(VARIABLE("d")), Seq("test1", "test2").toDF("d"))
+
+    empty.join(nonEmpty) shouldEqual nonEmpty
+  }
+
+  it should "join other nonempty multiset on the left" in {
+    val empty = Multiset(Set.empty, spark.emptyDataFrame)
+    val nonEmpty = Multiset(Set(VARIABLE("d")), Seq("test1", "test2").toDF("d"))
+
+    nonEmpty.join(empty) shouldEqual nonEmpty
   }
 
 }
