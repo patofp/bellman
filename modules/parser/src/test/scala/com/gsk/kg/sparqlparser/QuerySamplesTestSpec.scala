@@ -1,6 +1,7 @@
 package com.gsk.kg.sparqlparser
 import com.gsk.kg.sparqlparser.Expr._
 import com.gsk.kg.sparqlparser.FilterFunction._
+import com.gsk.kg.sparqlparser.Query.{Construct, Describe, Select}
 import com.gsk.kg.sparqlparser.StringFunc._
 import com.gsk.kg.sparqlparser.StringVal._
 import org.apache.jena.query.QueryFactory
@@ -28,7 +29,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec {
     val query = QuerySamples.q2
     val expr = QueryConstruct.parseADT(query)
     expr match {
-      case Select(vs, BGP(_)) =>
+      case Project(vs, BGP(_)) =>
         assert(vs.nonEmpty && vs.head == VARIABLE("?label"))
       case _ =>
         fail
@@ -39,7 +40,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec {
     val query = QuerySamples.q3
     val expr = QueryConstruct.parseADT(query)
     expr match {
-      case Distinct(Select(vs, BGP(_))) =>
+      case Distinct(Project(vs, BGP(_))) =>
         assert(vs.nonEmpty && vs.head == VARIABLE("?label"))
       case _ =>
         fail
@@ -50,7 +51,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec {
     val query = QuerySamples.q4
     val expr = QueryConstruct.parseADT(query)
     expr match {
-      case Select(vs, BGP(_)) =>
+      case Project(vs, BGP(_)) =>
         assert(vs.nonEmpty && vs.size == 2)
       case _ =>
         fail
@@ -61,7 +62,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec {
     val query = QuerySamples.q5
     val expr = QueryConstruct.parseADT(query)
     expr match {
-      case Select(vs, BGP(_)) =>
+      case Project(vs, BGP(_)) =>
         assert(vs.nonEmpty && vs.head == VARIABLE("?parent"))
       case _ =>
         fail
@@ -72,7 +73,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec {
     val query = QuerySamples.q6
     val expr = QueryConstruct.parseADT(query)
     expr match {
-      case Select(vs, Filter(funcs,r)) =>
+      case Project(vs, Filter(funcs,r)) =>
         assert(vs.nonEmpty && vs.head == VARIABLE("?parent"))
       case _ =>
         fail
@@ -83,7 +84,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec {
     val query = QuerySamples.q7
     val expr = QueryConstruct.parseADT(query)
     expr match {
-      case Select(vs, BGP(triples)) =>
+      case Project(vs, BGP(triples)) =>
         assert(vs.nonEmpty && vs.head == VARIABLE("?species"))
         assert(triples.size==7)
       case _ =>
@@ -95,7 +96,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec {
     val query = QuerySamples.q8
     val expr = QueryConstruct.parseADT(query)
     expr match {
-      case Select(vs, BGP(triples)) =>
+      case Project(vs, BGP(triples)) =>
         assert(vs.nonEmpty && vs.head == VARIABLE("?species"))
         assert(triples.size==7)
       case _ =>
@@ -107,7 +108,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec {
     val query = QuerySamples.q9
     val expr = QueryConstruct.parseADT(query)
     expr match {
-      case Select(vs, BGP(triples)) =>
+      case Project(vs, BGP(triples)) =>
         assert(vs.nonEmpty && vs.head == VARIABLE("?label"))
       case _ =>
         fail
@@ -118,7 +119,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec {
     val query = QuerySamples.q10
     val expr = QueryConstruct.parseADT(query)
     expr match {
-      case Select(vs, BGP(triples)) =>
+      case Project(vs, BGP(triples)) =>
         assert(vs.nonEmpty && vs.head == VARIABLE("?parent"))
         assert(triples.size == 1)
       case _ =>
@@ -131,7 +132,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec {
     val query = QuerySamples.q11
     val expr = QueryConstruct.parseADT(query)
     expr match {
-      case Distinct(Select(vs, BGP(triples))) =>
+      case Distinct(Project(vs, BGP(triples))) =>
         assert(vs.nonEmpty && vs.head == VARIABLE("?parent_name"))
         assert(triples.size == 2)
       case _ =>
@@ -143,7 +144,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec {
     val query = QuerySamples.q12
     val expr = QueryConstruct.parseADT(query)
     expr match {
-      case Select(vs, Filter(funcs,Extend(to,from,BGP(_)))) =>
+      case Project(vs, Filter(funcs,Extend(to,from,BGP(_)))) =>
         assert(vs.nonEmpty && vs.size == 3)
         assert(funcs.size == 1)
         assert(to == VARIABLE("?o"))
@@ -158,7 +159,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec {
     val expr = QueryConstruct.parseADT(query)
     println(expr)
     expr match {
-      case Select(vs, Filter(funcs,Extend(to,from,BGP(_)))) =>
+      case Project(vs, Filter(funcs,Extend(to,from,BGP(_)))) =>
         assert(vs.nonEmpty && vs.size == 3)
         assert(funcs.size == 1)
         assert(to == VARIABLE("?o"))
@@ -171,12 +172,90 @@ class QuerySamplesTestSpec extends AnyFlatSpec {
     val query = QuerySamples.q14
     val expr = QueryConstruct.parseADT(query)
     expr match {
-      case Select(vs, Union(l,r)) =>
+      case Project(vs, Union(l,r)) =>
         assert(vs.nonEmpty && vs.size == 3)
         r match {
           case Filter(funcs,e) => succeed
           case _ => fail
         }
+      case _ =>
+        fail
+    }
+  }
+
+  "Test simple describe query" should "parse" in {
+    val query = QuerySamples.q15
+    val q = QueryConstruct.parse(query)
+    q match {
+      case Describe(_, OpNil()) =>
+        succeed
+      case _ =>
+        fail
+    }
+  }
+
+  "Test describe query" should "parse" in {
+    val query = QuerySamples.q16
+    val q = QueryConstruct.parse(query)
+    q match {
+      case Describe(vars, Project(vs, Filter(_,_))) =>
+        assert(vars == vs)
+        succeed
+      case _ =>
+        fail
+    }
+  }
+
+  "Tests str conversion and logical operators" should "parse" in {
+    val query = QuerySamples.q17
+    val q = QueryConstruct.parse(query)
+    q match {
+      case Select(vars, Project(vs, Filter(_,_)))=>
+        succeed
+      case _ =>
+        fail
+    }
+  }
+
+  "Tests FILTER positioning with graph sub-patterns" should "parse" in {
+    val query = QuerySamples.q18
+    val q = QueryConstruct.parse(query)
+    q match {
+      case Select(vars, Project(vs, Filter(_,_)))=>
+        succeed
+      case _ =>
+        fail
+    }
+  }
+
+  "Test for FILTER in different positions" should "parse" ignore {
+    val query = QuerySamples.q19
+    val q = QueryConstruct.parse(query)
+    q match {
+      case Select(vars, Distinct(Project(vs, Filter(_,_))))=>
+        succeed
+      case _ =>
+        fail
+    }
+  }
+
+  "Test CONSTRUCT and string replacement" should "parse" in {
+    val query = QuerySamples.q20
+    val q = QueryConstruct.parse(query)
+    q match {
+      case Construct(vars, _, Extend(to,REPLACE(_,_,_),r))=>
+        succeed
+      case _ =>
+        fail
+    }
+  }
+
+  "Test document query" should "parse" in {
+    val query = QuerySamples.q21
+    val q = QueryConstruct.parse(query)
+    q match {
+      case Select(vars, Project(vs, BGP(ts)))=>
+        assert(ts.size == 21)
       case _ =>
         fail
     }
