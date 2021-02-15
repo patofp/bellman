@@ -137,6 +137,16 @@ class MultisetSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     )
   }
 
+  "Multiset.union" should "work both sides are empty" in {
+    val ms1 = Multiset(Set.empty, spark.emptyDataFrame)
+    val ms2 = Multiset(Set.empty, spark.emptyDataFrame)
+
+    assertMultisetEquals(
+      ms1.union(ms2),
+      Multiset(Set.empty, spark.emptyDataFrame)
+    )
+  }
+
   def assertMultisetEquals(ms1: Multiset, ms2: Multiset): Unit = {
     assert(ms1.bindings === ms2.bindings, "bindings are different")
     assert(

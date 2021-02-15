@@ -60,6 +60,10 @@ final case class Multiset(
       bindings.intersect(vars.toSet),
       dataframe.select(vars.map(v => dataframe(v.s)): _*)
     )
+
+
+  def union(other: Multiset): Multiset =
+      return this
 }
 
 object Multiset {
