@@ -28,19 +28,20 @@ final case class Multiset(
     * @param other
     * @return the join result of both multisets
     */
-  def join(other: Multiset): Multiset = (this, other) match {
-    case (a, b) if a.isEmpty => b
-    case (a, b) if b.isEmpty => a
-    case (Multiset(aBindings, aDF), Multiset(bBindings, bDF)) if aBindings.intersect(bBindings).isEmpty =>
-      val df = aDF.as("a")
-        .crossJoin(bDF.as("b"))
-      Multiset(aBindings.union(bBindings), df)
-    case (a, b) =>
-      val common = a.bindings.intersect(b.bindings)
-      val df = a.dataframe.as("a")
-        .join(b.dataframe.as("b"), common.map(_.s).toSeq)
-      Multiset(a.bindings.union(b.bindings), df)
-  }
+  def join(other: Multiset): Multiset =
+    (this, other) match {
+      case (a, b) if a.isEmpty => b
+      case (a, b) if b.isEmpty => a
+      case (Multiset(aBindings, aDF), Multiset(bBindings, bDF)) if aBindings.intersect(bBindings).isEmpty =>
+        val df = aDF.as("a")
+          .crossJoin(bDF.as("b"))
+        Multiset(aBindings.union(bBindings), df)
+      case (a, b) =>
+        val common = a.bindings.intersect(b.bindings)
+        val df = a.dataframe.as("a")
+          .join(b.dataframe.as("b"), common.map(_.s).toSeq)
+        Multiset(a.bindings.union(b.bindings), df)
+    }
 
   /**
     * Return wether both the dataframe & bindings are empty
@@ -63,7 +64,11 @@ final case class Multiset(
 
 
   def union(other: Multiset): Multiset =
-      return this
+    (this, other) match {
+      case (a, b) if a.isEmpty => b
+      case (a, b) if b.isEmpty => a
+    }
+
 }
 
 object Multiset {
