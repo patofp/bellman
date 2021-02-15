@@ -1,5 +1,6 @@
 package com.gsk.kg.engine
 
+import com.gsk.kg.sparql.syntax.all._
 import com.gsk.kg.sparqlparser.Expr._
 import com.gsk.kg.sparqlparser.FilterFunction._
 import com.gsk.kg.sparqlparser.StringFunc._
@@ -32,15 +33,15 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     import sqlContext.implicits._
 
     val df = dfList.toDF("s", "p", "o")
-    val expr = QueryConstruct.parseADT("""
+    val query = sparql"""
       SELECT
         ?s ?p ?o
       WHERE {
         ?s ?p ?o .
       }
-      """)
+      """
 
-    Engine.evaluate(df, expr).right.get.collect() shouldEqual df.collect()
+    Engine.evaluate(df, query.r).right.get.collect() shouldEqual df.collect()
   }
 
   it should "execute a query with two dependent BGPs" in {
@@ -48,16 +49,16 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
     val df: DataFrame = dfList.toDF("s", "p", "o")
 
-    val expr = QueryConstruct.parseADT("""
+    val query = sparql"""
       SELECT
         ?d ?src
       WHERE {
         ?d a <http://id.gsk.com/dm/1.0/Document> .
         ?d <http://id.gsk.com/dm/1.0/docSource> ?src
       }
-      """)
+      """
 
-    Engine.evaluate(df, expr).right.get.collect() shouldEqual Array(Row("test", "source"))
+    Engine.evaluate(df, query.r).right.get.collect() shouldEqual Array(Row("test", "source"))
   }
 
 }
