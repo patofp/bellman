@@ -11,7 +11,8 @@ lazy val Versions = Map(
   "scala211"           -> "2.11.12",
   "droste"             -> "0.8.0",
   "spark"              -> "2.4.7",
-  "spark-testing-base" -> "2.4.5_0.14.0"
+  "spark-testing-base" -> "2.4.5_0.14.0",
+  "jackson"            -> "2.6.7",
 )
 
 inThisBuild(List(
@@ -77,12 +78,9 @@ lazy val `bellman-algebra-parser` = project
   .settings(compilerPlugins)
   .settings(
     libraryDependencies ++= Seq(
-      "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.4",
-      "org.apache.jena" % "jena-arq" % Versions("jena") excludeAll(
-        ExclusionRule(organization = "com.fasterxml.jackson.core")
-      ),
+      "org.apache.jena" % "jena-arq" % Versions("jena"),
       "com.lihaoyi" %% "fastparse" % Versions("fastparse"),
-    )
+    ),
   )
 
 lazy val `bellman-spark-engine` = project
@@ -95,6 +93,9 @@ lazy val `bellman-spark-engine` = project
     libraryDependencies ++= Seq(
       "org.apache.spark"  %% "spark-sql"          % Versions("spark"),
       "com.holdenkarau"   %% "spark-testing-base" % Versions("spark-testing-base") % Test
+    ),
+    dependencyOverrides ++= Seq(
+      "com.fasterxml.jackson.core" % "jackson-databind" % Versions("jackson"),
     )
   )
   .dependsOn(`bellman-algebra-parser`)
