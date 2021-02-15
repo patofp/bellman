@@ -10,40 +10,61 @@ object FilterFunctionParser {
   def strstarts[_:P]:P[Unit] = P("strstarts")
   def gt[_:P]:P[Unit] = P(">")
   def lt[_:P]:P[Unit] = P("<")
+  def and[_:P]:P[Unit] = P("&&")
+  def or[_:P]:P[Unit] = P("||")
+  def negate[_:P]:P[Unit] = P("!")
 
   def equalsParen[_:P]:P[EQUALS] =
-    P("(" ~ equals ~ (StringFuncParser.parser | StringValParser.tripleValParser) ~
-      (StringFuncParser.parser | StringValParser.tripleValParser) ~ ")").map(
+    P("(" ~ equals ~ (FilterFunctionParser.parser | StringFuncParser.parser | StringValParser.tripleValParser) ~
+      (FilterFunctionParser.parser | StringFuncParser.parser | StringValParser.tripleValParser) ~ ")").map(
      f => EQUALS(f._1, f._2)
     )
 
   def regexParen[_:P]:P[REGEX] =
-    P("(" ~ regex ~ (StringFuncParser.parser | StringValParser.tripleValParser) ~
-      (StringFuncParser.parser | StringValParser.tripleValParser) ~ ")").map(
+    P("(" ~ regex ~ (FilterFunctionParser.parser | StringFuncParser.parser | StringValParser.tripleValParser) ~
+      (FilterFunctionParser.parser | StringFuncParser.parser | StringValParser.tripleValParser) ~ ")").map(
       f => REGEX(f._1, f._2)
     )
 
   def strstartsParen[_:P]:P[STRSTARTS] =
-    P("(" ~ strstarts ~ (StringFuncParser.parser | StringValParser.tripleValParser) ~
-      (StringFuncParser.parser | StringValParser.tripleValParser) ~ ")").map(
+    P("(" ~ strstarts ~ (FilterFunctionParser.parser | StringFuncParser.parser | StringValParser.tripleValParser) ~
+      (FilterFunctionParser.parser | StringFuncParser.parser | StringValParser.tripleValParser) ~ ")").map(
       f => STRSTARTS(f._1, f._2)
     )
 
   def gtParen[_:P]:P[GT] =
-    P("(" ~ gt ~ (StringFuncParser.parser | StringValParser.tripleValParser) ~
-      (StringFuncParser.parser | StringValParser.tripleValParser) ~ ")").map(
+    P("(" ~ gt ~ (FilterFunctionParser.parser | StringFuncParser.parser | StringValParser.tripleValParser) ~
+      (FilterFunctionParser.parser | StringFuncParser.parser | StringValParser.tripleValParser) ~ ")").map(
       f => GT(f._1, f._2)
     )
 
   def ltParen[_:P]:P[LT] =
-    P("(" ~ lt ~ (StringFuncParser.parser | StringValParser.tripleValParser) ~
-      (StringFuncParser.parser | StringValParser.tripleValParser) ~ ")").map(
+    P("(" ~ lt ~ (FilterFunctionParser.parser | StringFuncParser.parser | StringValParser.tripleValParser) ~
+      (FilterFunctionParser.parser | StringFuncParser.parser | StringValParser.tripleValParser) ~ ")").map(
       f => LT(f._1, f._2)
     )
+
+  def andParen[_:P]:P[AND] =
+    P("(" ~ and ~ (FilterFunctionParser.parser | StringFuncParser.parser | StringValParser.tripleValParser) ~
+      (FilterFunctionParser.parser | StringFuncParser.parser | StringValParser.tripleValParser) ~ ")").map(
+      f => AND(f._1, f._2)
+    )
+  def orParen[_:P]:P[OR] =
+    P("(" ~ or ~ (FilterFunctionParser.parser | StringFuncParser.parser | StringValParser.tripleValParser) ~
+      (FilterFunctionParser.parser | StringFuncParser.parser | StringValParser.tripleValParser) ~ ")").map(
+      f => OR(f._1, f._2)
+    )
+
+  def negateParen[_:P]:P[NEGATE] =
+    P("(" ~ negate ~(FilterFunctionParser.parser | StringFuncParser.parser | StringValParser.tripleValParser) ~ ")").map(NEGATE(_))
+
   def parser[_:P]:P[FilterFunction] =
     P(equalsParen
     | regexParen
     | strstartsParen
     | gtParen
-    | ltParen)
+    | ltParen
+    | andParen
+    | orParen
+    | negateParen)
 }

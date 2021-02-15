@@ -23,9 +23,13 @@ trait Visitor[T] {
 
   def visitGraph(g: StringLike, d: T): T
 
-  def visitConstruct(vars: Seq[VARIABLE], bgp: BGP, d: T): T
-
   def visitSelect(vars: Seq[VARIABLE], d: T): T
+
+  def visitOffsetLimit(off: Option[Long], lmt: Option[Long], d: T): T
+
+  def visitDistinct(e: T): T
+
+  def visitOpNil: T
 }
 
 object Visitors {
@@ -59,10 +63,15 @@ object Visitors {
         visitor.visitJoin(left, right)
       case Graph(g, e) =>
         visitor.visitGraph(g, dispatch(e, visitor))
-      case Construct(vars, bgp, r) =>
-        visitor.visitConstruct(vars, bgp, dispatch(r, visitor))
-      case Select(vars, r) =>
+      case Project(vars, r) =>
         visitor.visitSelect(vars, dispatch(r, visitor))
+      case OffsetLimit(offset,limit, r) =>
+        visitor.visitOffsetLimit(offset, limit, dispatch(r, visitor))
+      case Distinct(r) =>
+        visitor.visitDistinct(dispatch(r,visitor))
+      case OpNil() => visitor.visitOpNil
+
+
     }
   }
 }

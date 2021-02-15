@@ -66,9 +66,13 @@ object Engine {
         StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
       case GraphF(g, e) =>
         StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
-      case ConstructF(vars, bgp, r) =>
+      case DistinctF(r) =>
         StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
-      case SelectF(vars, r) =>
+      case OffsetLimitF(offset, limit, r) =>
+        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
+      case OpNilF() =>
+        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
+      case ProjectF(vars, r) =>
         r.select(vars: _*).pure[M]
     }
 
