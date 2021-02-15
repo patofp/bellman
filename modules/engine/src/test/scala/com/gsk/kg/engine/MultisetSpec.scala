@@ -171,6 +171,24 @@ class MultisetSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     )
   }
 
+  it should "union two multisets with the same bindings" in {
+    import sqlContext.implicits._
+
+    val a = VARIABLE("a")
+    val b = VARIABLE("b")
+
+    val ms1 = Multiset(Set(a, b), List(("A", "1"), ("B", "2"), ("C", "3")).toDF(a.s, b.s))
+    val ms2 = Multiset(Set(a, b), List(("D", "4"), ("E", "5"), ("F", "6")).toDF(a.s, b.s))
+
+    assertMultisetEquals(
+      ms1.union(ms2),
+      Multiset(
+        Set(VARIABLE("a"), VARIABLE("b")),
+        List(("A", "1"), ("B", "2"), ("C", "3"), ("D", "4"), ("E", "5"), ("F", "6")).toDF("a", "b")
+      )
+    )
+  }
+
   def assertMultisetEquals(ms1: Multiset, ms2: Multiset): Unit = {
     assert(ms1.bindings === ms2.bindings, "bindings are different")
     assert(

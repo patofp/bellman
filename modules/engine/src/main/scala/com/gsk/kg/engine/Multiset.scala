@@ -67,6 +67,12 @@ final case class Multiset(
     (this, other) match {
       case (a, b) if a.isEmpty => b
       case (a, b) if b.isEmpty => a
+      case (a, b) =>
+        Multiset(
+          a.bindings.union(b.bindings),
+          a.dataframe.union(b.dataframe)
+        )
+
     }
 
 }
