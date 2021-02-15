@@ -42,8 +42,19 @@ final case class Multiset(
       Multiset(a.bindings.union(b.bindings), df)
   }
 
+  /**
+    * Return wether both the dataframe & bindings are empty
+    *
+    * @return
+    */
   def isEmpty: Boolean = bindings.isEmpty && dataframe.isEmpty
 
+  /**
+    * Get a new multiset with only the projected [[vars]].
+    *
+    * @param vars
+    * @return
+    */
   def select(vars: VARIABLE*): Multiset =
     Multiset(
       bindings.intersect(vars.toSet),
