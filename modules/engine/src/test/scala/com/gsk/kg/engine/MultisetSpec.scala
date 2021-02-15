@@ -147,7 +147,7 @@ class MultisetSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     )
   }
 
-  it should "work left side empty" in {
+  it should "work when left side is empty" in {
     import sqlContext.implicits._
 
     val ms1 = Multiset(Set.empty, spark.emptyDataFrame)
@@ -156,6 +156,18 @@ class MultisetSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     assertMultisetEquals(
       ms1.union(ms2),
       ms2
+    )
+  }
+
+  it should "work when right side is empty" in {
+    import sqlContext.implicits._
+
+    val ms1 = Multiset(Set(VARIABLE("a")), List("A", "B", "C").toDF("a"))
+    val ms2 = Multiset(Set.empty, spark.emptyDataFrame)
+
+    assertMultisetEquals(
+      ms1.union(ms2),
+      ms1
     )
   }
 
