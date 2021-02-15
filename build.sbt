@@ -1,14 +1,18 @@
 import xerial.sbt.Sonatype._
 
 lazy val Versions = Map(
-  "kind-projector" -> "0.11.3",
-  "cats"           -> "2.0.0",
-  "jena"           -> "3.17.0",
-  "scalatest"      -> "3.2.3",
-  "fastparse"      -> "2.1.2",
-  "cats"           -> "2.0.0",
-  "scala212"       -> "2.12.12",
-  "scala211"       -> "2.11.12"
+  "kind-projector"     -> "0.11.3",
+  "cats"               -> "2.0.0",
+  "jena"               -> "3.17.0",
+  "scalatest"          -> "3.2.3",
+  "fastparse"          -> "2.1.2",
+  "cats"               -> "2.0.0",
+  "scala212"           -> "2.12.12",
+  "scala211"           -> "2.11.12",
+  "droste"             -> "0.8.0",
+  "spark"              -> "2.4.7",
+  "spark-testing-base" -> "2.4.5_0.14.0",
+  "jackson"            -> "2.6.7",
 )
 
 inThisBuild(List(
@@ -45,12 +49,16 @@ lazy val noPublishSettings = Seq(
 
 lazy val compilerPlugins = Seq(
   libraryDependencies ++= Seq(
-    compilerPlugin("org.typelevel" %% "kind-projector" % Versions("kind-projector") cross CrossVersion.full)
+    compilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full),
+    compilerPlugin("org.typelevel" %% "kind-projector" % Versions("kind-projector") cross CrossVersion.full),
   )
 )
 
 lazy val commonDependencies = Seq(
   libraryDependencies ++= Seq(
+    "org.typelevel" %% "cats-core" % Versions("cats"),
+    "io.higherkindness" %% "droste-core" % Versions("droste"),
+    "io.higherkindness" %% "droste-macros" % Versions("droste"),
     "org.scalatest" %% "scalatest" % Versions("scalatest") % Test,
   )
 )
@@ -70,9 +78,9 @@ lazy val `bellman-algebra-parser` = project
   .settings(compilerPlugins)
   .settings(
     libraryDependencies ++= Seq(
-      "org.apache.jena" % "apache-jena-libs" % Versions("jena") pomOnly(),
+      "org.apache.jena" % "jena-arq" % Versions("jena"),
       "com.lihaoyi" %% "fastparse" % Versions("fastparse"),
-    )
+    ),
   )
 
 lazy val `bellman-spark-engine` = project
@@ -83,8 +91,13 @@ lazy val `bellman-spark-engine` = project
   .settings(compilerPlugins)
   .settings(
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "cats-core" % Versions("cats")
+      "org.apache.spark"  %% "spark-sql"          % Versions("spark"),
+      "com.holdenkarau"   %% "spark-testing-base" % Versions("spark-testing-base") % Test
+    ),
+    dependencyOverrides ++= Seq(
+      "com.fasterxml.jackson.core" % "jackson-databind" % Versions("jackson"),
     )
   )
+  .dependsOn(`bellman-algebra-parser`)
 
 addCommandAlias("ci-test", ";scalastyle ;+test")
