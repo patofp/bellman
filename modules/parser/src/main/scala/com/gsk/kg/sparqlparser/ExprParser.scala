@@ -42,8 +42,8 @@ object ExprParser {
 
   def bgpParen[_:P]:P[BGP] = P("(" ~ bgp ~ triple.rep(1) ~ ")").map(BGP(_))
 
-  def filterExprList[_:P]:P[Seq[FilterFunction]] =
-    P("(" ~ exprList ~ FilterFunctionParser.parser.rep(2) ~ ")")
+  def filterExprList[_:P]:P[Seq[Expression]] =
+    P("(" ~ exprList ~ (FilterFunctionParser.parser | StringFuncParser.parser).rep(2) ~ ")")
 
   def filterListParen[_:P]:P[Filter] =
     P("(" ~ filter ~ filterExprList ~ graphPattern ~ ")").map {
@@ -51,7 +51,7 @@ object ExprParser {
     }
 
   def filterSingleParen[_:P]:P[Filter] =
-    P("(" ~ filter ~ FilterFunctionParser.parser ~ graphPattern ~ ")").map {
+    P("(" ~ filter ~ (FilterFunctionParser.parser | StringFuncParser.parser) ~ graphPattern ~ ")").map {
       p => Filter(List(p._1), p._2)
     }
 
@@ -67,8 +67,8 @@ object ExprParser {
     u => Union(u._1, u._2)
   }
   def extendParen[_:P]:P[Extend] = P("(" ~
-    extend ~ "((" ~ (StringValParser.tripleValParser | StringFuncParser.parser) ~
-    (StringValParser.tripleValParser | StringFuncParser.parser) ~ "))" ~
+    extend ~ "((" ~ (StringValParser.variable) ~
+    (StringValParser.tripleValParser | StringFuncParser.parser | FilterFunctionParser.parser) ~ "))" ~
     graphPattern ~ ")").map{
     ext => Extend(ext._1, ext._2, ext._3)
   }

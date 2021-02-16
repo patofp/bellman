@@ -157,7 +157,6 @@ class QuerySamplesTestSpec extends AnyFlatSpec {
   "Test BIND in another position in the query" should "parse to same as q12" ignore {
     val query = QuerySamples.q13
     val expr = QueryConstruct.parseADT(query)
-    println(expr)
     expr match {
       case Project(vs, Filter(funcs,Extend(to,from,BGP(_)))) =>
         assert(vs.nonEmpty && vs.size == 3)
@@ -228,7 +227,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec {
     }
   }
 
-  "Test for FILTER in different positions" should "parse" ignore {
+  "Test for FILTER in different positions" should "parse" in {
     val query = QuerySamples.q19
     val q = QueryConstruct.parse(query)
     q match {
@@ -256,6 +255,162 @@ class QuerySamplesTestSpec extends AnyFlatSpec {
     q match {
       case Select(vars, Project(vs, BGP(ts)))=>
         assert(ts.size == 21)
+      case _ =>
+        fail
+    }
+  }
+
+  //Comprehensive queries
+
+  "Get a sample of triples joining non-blank nodes" should "parse" in {
+    val query = QuerySamples.q22
+    val q = QueryConstruct.parse(query)
+    q match {
+      case Select(vars, OffsetLimit(None, Some(10),Project(_,Filter(_,_))))=>
+        succeed
+      case _ =>
+        fail
+    }
+  }
+
+  "Check DISTINCT works" should "parse" in {
+    val query = QuerySamples.q23
+    val q = QueryConstruct.parse(query)
+    q match {
+      case Select(vars, OffsetLimit(None, Some(10),Distinct(Project(vs,_))))=>
+        assert(vs.size == 3)
+      case _ =>
+        fail
+    }
+  }
+
+  "Get class parent-child relations" should "parse" in {
+    val query = QuerySamples.q24
+    val q = QueryConstruct.parse(query)
+    q match {
+      case Select(vars, Project(_,Filter(_,_))) =>
+        succeed
+      case _ =>
+        fail
+    }
+  }
+
+  "Get class parent-child relations with optional labels" should "parse" in {
+    val query = QuerySamples.q25
+    val q = QueryConstruct.parse(query)
+    q match {
+      case Select(vars, Project(_,Filter(_,_))) =>
+        succeed
+      case _ =>
+        fail
+    }
+  }
+
+  "Get all labels in file" should "parse" in {
+    val query = QuerySamples.q26
+    val q = QueryConstruct.parse(query)
+    q match {
+      case Select(vars, Distinct(Project(_,_)))=>
+        succeed
+      case _ =>
+        fail
+    }
+  }
+
+  "Get label of owl:Thing" should "parse" in {
+    val query = QuerySamples.q27
+    val q = QueryConstruct.parse(query)
+    q match {
+      case Select(vars, Project(vs,_))=>
+        assert(vs.nonEmpty && vs.head == VARIABLE("?label"))
+      case _ =>
+        fail
+    }
+  }
+
+  "Get label of owl:Thing with prefix" should "parse" in {
+    val query = QuerySamples.q28
+    val q = QueryConstruct.parse(query)
+    q match {
+      case Select(vars, Project(_,_))=>
+        succeed
+      case _ =>
+        fail
+    }
+  }
+
+  "Get label of owl:Thing with explanatory comment" should "parse" in {
+    val query = QuerySamples.q29
+    val q = QueryConstruct.parse(query)
+    q match {
+      case Select(vars, Project(_,_))=>
+        succeed
+      case _ =>
+        fail
+    }
+  }
+
+  "Get label of owl:Thing with regex to remove poor label if present" should "parse" in {
+    val query = QuerySamples.q30
+    val q = QueryConstruct.parse(query)
+    q match {
+      case Select(vars, Project(_,Filter(_,_)))=>
+        succeed
+      case _ =>
+        fail
+    }
+  }
+
+  "Construct a graph where everything which is a Thing is asserted to exist" should "parse" in {
+    val query = QuerySamples.q31
+    val q = QueryConstruct.parse(query)
+    q match {
+      case Construct(vars, bgp, BGP(_))=>
+        succeed
+      case _ =>
+        fail
+    }
+  }
+
+  "Construct a graph where all the terms derived from a species have a new relation" should "parse" in {
+    val query = QuerySamples.q32
+    val q = QueryConstruct.parse(query)
+    q match {
+      case Construct(vars, bgp, BGP(_))=>
+        succeed
+      case _ =>
+        fail
+    }
+  }
+
+  "Detect punned relations in an ontology" should "parse" in {
+    val query = QuerySamples.q33
+    val q = QueryConstruct.parse(query)
+    q match {
+      case Select(vars, Project(_,_))=>
+        succeed
+      case _ =>
+        fail
+    }
+  }
+
+  "Construct a triple where the predicate is derived" should "parse" in {
+    val query = QuerySamples.q34
+    val q = QueryConstruct.parse(query)
+    q match {
+      case Construct(vars, bgp, Union(BGP(_),BGP(_)))=>
+        succeed
+      case _ =>
+        fail
+    }
+  }
+
+  "Query to convert schema of predications" should "parse" in {
+    val query = QuerySamples.q35
+    val q = QueryConstruct.parse(query)
+    q match {
+      case Construct(vars, bgp, Extend(to, from, e))=>
+        assert(to == VARIABLE("?pred"))
       case _ =>
         fail
     }
