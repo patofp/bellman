@@ -228,7 +228,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec {
     }
   }
 
-  "Test for FILTER in different positions" should "parse" ignore {
+  "Test for FILTER in different positions" should "parse" in {
     val query = QuerySamples.q19
     val q = QueryConstruct.parse(query)
     q match {
