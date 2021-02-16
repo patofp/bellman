@@ -68,7 +68,7 @@ final case class Multiset(
     (this, other) match {
       case (a, b) if a.isEmpty => b
       case (a, b) if b.isEmpty => a
-      case (Multiset(aBindings, aDF), Multiset(bBindings, bDF)) if aDF.columns.length == bDF.columns.length =>
+      case (Multiset(aBindings, aDF), Multiset(bBindings, bDF)) if aDF.columns == bDF.columns =>
         Multiset(
           aBindings.union(bBindings),
           aDF.union(bDF)

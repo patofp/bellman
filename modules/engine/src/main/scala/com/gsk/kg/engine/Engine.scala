@@ -40,7 +40,7 @@ object Engine {
       case FilteredLeftJoinF(l, r, f) =>
         StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
       case UnionF(l, r) =>
-        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
+        l.union(r).pure[M]
       case ExtendF(bindTo, bindFrom, r) =>
         StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
       case FilterF(funcs, expr) =>
