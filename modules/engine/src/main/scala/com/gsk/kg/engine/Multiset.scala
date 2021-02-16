@@ -26,6 +26,13 @@ final case class Multiset(
     * If they don't share any common binding, it performs a cross join
     * instead.
     *
+    * =Spec=
+    *
+    * Defn: Join
+    * Let Ω1 and Ω2 be multisets of mappings. We define:
+    * Join(Ω1, Ω2) = { merge(μ1, μ2) | μ1 in Ω1and μ2 in Ω2, and μ1 and μ2 are compatible }
+    * card[Join(Ω1, Ω2)](μ) = sum over μ in (Ω1 set-union Ω2), card[Ω1](μ1)*card[Ω2](μ2)
+    *
     * @param other
     * @return the join result of both multisets
     */
@@ -64,6 +71,20 @@ final case class Multiset(
     )
 
 
+  /**
+    * Perform a union between [[this]] and [[other]], as described in
+    * SparQL Algebra doc.
+    *
+    * =Spec=
+    *
+    * Defn: Union
+    * Let Ω1 and Ω2 be multisets of mappings. We define:
+    * Union(Ω1, Ω2) = { μ | μ in Ω1 or μ in Ω2 }
+    * card[Union(Ω1, Ω2)](μ) = card[Ω1](μ) + card[Ω2](μ)
+    *
+    * @param other
+    * @return the Union of both multisets
+    */
   def union(other: Multiset): Multiset =
     (this, other) match {
       case (a, b) if a.isEmpty => b
