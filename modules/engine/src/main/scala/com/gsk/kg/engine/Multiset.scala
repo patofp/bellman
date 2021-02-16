@@ -1,6 +1,7 @@
 package com.gsk.kg.engine
 
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
+import org.apache.spark.sql.functions._
 import org.apache.spark.sql.DataFrame
 import cats.kernel.Semigroup
 import org.apache.spark.sql.SQLContext
@@ -67,12 +68,28 @@ final case class Multiset(
     (this, other) match {
       case (a, b) if a.isEmpty => b
       case (a, b) if b.isEmpty => a
-      case (a, b) =>
+      case (Multiset(aBindings, aDF), Multiset(bBindings, bDF)) if aDF.columns.length == bDF.columns.length =>
         Multiset(
-          a.bindings.union(b.bindings),
-          a.dataframe.union(b.dataframe)
+          aBindings.union(bBindings),
+          aDF.union(bDF)
         )
+      case (Multiset(aBindings, aDF), Multiset(bBindings, bDF)) =>
 
+        val colsA = aDF.columns.toSet
+        val colsB = bDF.columns.toSet
+        val union = colsA.union(colsB)
+
+        def genColumns(current: Set[String], total: Set[String]) = {
+          total.map(x => x match {
+            case x if current.contains(x) => col(x)
+            case _ => lit(null).as(x)
+          }).toList
+        }
+
+        Multiset(
+          aBindings.union(bBindings),
+          aDF.select(genColumns(colsA, union):_*).unionAll(bDF.select(genColumns(colsB, union):_*))
+        )
     }
 
 }
