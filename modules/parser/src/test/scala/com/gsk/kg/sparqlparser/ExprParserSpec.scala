@@ -93,7 +93,7 @@ class ExprParserSpec extends AnyFlatSpec {
   "Filter over simple BGP" should "Result in correct nesting of filter and BGP" in {
     val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/q8-filter-simple-basic-graph.sparql"), ExprParser.parser(_))
     p.get.value match {
-      case Filter(s1:Seq[FilterFunction], b:BGP) => succeed
+      case Filter(s1:Seq[Expression], b:BGP) => succeed
       case _ => fail
     }
   }
@@ -112,11 +112,11 @@ class ExprParserSpec extends AnyFlatSpec {
     val p  = fastparse.parse(TestUtils.sparql2Algebra("/queries/q10-complex-filter.sparql"), ExprParser.parser(_))
     p.get.value match {
       case Filter(
-            seq1:Seq[FilterFunction],
+            seq1:Seq[Expression],
               Union(
                 Union(
                   Filter(
-                    seq2:Seq[FilterFunction],
+                    seq2:Seq[Expression],
                     Extend(s1:StringVal, s2:StringVal,
                       LeftJoin(
                         LeftJoin(
@@ -152,12 +152,12 @@ class ExprParserSpec extends AnyFlatSpec {
     val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/q13-complex-named-graph.sparql"), ExprParser.parser(_))
     p.get.value match {
       case Filter(
-        seq1:Seq[FilterFunction],
+        seq1:Seq[Expression],
         Union(
           Union(
             Graph(g1:URIVAL,
             Filter(
-              seq2:Seq[FilterFunction],
+              seq2:Seq[Expression],
               Extend(s1:StringVal, s2:StringVal,
                 LeftJoin(
                   LeftJoin(

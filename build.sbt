@@ -12,7 +12,7 @@ lazy val Versions = Map(
   "droste"             -> "0.8.0",
   "spark"              -> "2.4.7",
   "spark-testing-base" -> "2.4.5_0.14.0",
-  "jackson"            -> "2.6.7",
+  "jackson"            -> "2.12.1",
 )
 
 inThisBuild(List(
@@ -91,11 +91,12 @@ lazy val `bellman-spark-engine` = project
   .settings(compilerPlugins)
   .settings(
     libraryDependencies ++= Seq(
-      "org.apache.spark"  %% "spark-sql"          % Versions("spark"),
+      "org.apache.spark"  %% "spark-sql"          % Versions("spark") % Provided,
       "com.holdenkarau"   %% "spark-testing-base" % Versions("spark-testing-base") % Test
     ),
     dependencyOverrides ++= Seq(
       "com.fasterxml.jackson.core" % "jackson-databind" % Versions("jackson"),
+      "com.fasterxml.jackson.module" %% "jackson-module-scala" % Versions("jackson"),
     )
   )
   .dependsOn(`bellman-algebra-parser`)

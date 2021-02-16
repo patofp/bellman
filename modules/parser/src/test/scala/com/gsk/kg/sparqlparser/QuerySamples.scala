@@ -261,4 +261,198 @@ object QuerySamples {
         ?doc dm:pubDateMonth ?month .
     }
     """
+
+  // Comprehensive queries
+
+  // Get a sample of triples joining non-blank nodes
+  val q22 = "SELECT ?s ?p ?o WHERE {?s ?p ?o . FILTER (!isBlank(?s) && !isBlank(?o))} LIMIT 10"
+
+  // Check DISTINCT works on a small dataset
+  val q23 = "SELECT DISTINCT ?s ?p ?o WHERE {?s ?p ?o} LIMIT 10"
+
+  // Get class parent-child relations
+  val q24 = """
+    SELECT ?s ?o WHERE {
+        ?s <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?o .
+        FILTER (!isBlank(?s) && !isBlank(?o))
+    }
+    """
+
+  // Get class parent-child relations with optional labels
+  // Tests OPTIONAL
+  val q25 = """
+    SELECT ?s ?s_name ?o ?o_name WHERE {
+        ?s <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?o .
+        FILTER (!isBlank(?s) && !isBlank(?o)) .
+        OPTIONAL {?s <http://www.w3.org/2000/01/rdf-schema#label> ?s_name}
+        OPTIONAL {?o <http://www.w3.org/2000/01/rdf-schema#label> ?o_name}
+    }
+    """
+
+  // Get all labels in file
+  val q26 = """
+    SELECT DISTINCT ?label WHERE {
+        ?s <http://www.w3.org/2000/01/rdf-schema#label> ?label .
+    }
+    """
+
+  // Get label of owl:Thing
+  // This subject should be present in all ontology files
+  val q27 = """
+    SELECT ?label WHERE {
+        <http://www.w3.org/2002/07/owl#Thing>
+        <http://www.w3.org/2000/01/rdf-schema#label>
+        ?label .
+    }
+    """
+
+  // Get label of owl:Thing with prefix
+  // This tests prefixes
+  val q28 = """
+    PREFIX owl: <http://www.w3.org/2002/07/owl#>
+    SELECT ?label WHERE {
+        owl:Thing <http://www.w3.org/2000/01/rdf-schema#label> ?label .
+    }
+    """
+
+  // Get label of owl:Thing with explanatory comment
+  // This tests comments
+  val q29 = """
+    PREFIX owl: <http://www.w3.org/2002/07/owl#>
+    SELECT ?label WHERE {
+        owl:Thing  # owl:Thing is the base class of all possible entities in ontologies
+        <http://www.w3.org/2000/01/rdf-schema#label>
+        ?label .
+    }
+    """
+
+  // Get label of owl:Thing with regex to remove poor label if present
+  // This tests regexes
+  val q30 = """
+    PREFIX owl: <http://www.w3.org/2002/07/owl#>
+    SELECT ?label WHERE {
+        owl:Thing <http://www.w3.org/2000/01/rdf-schema#label> ?label .
+        FILTER regex(?label, "^(?!.*(owl:))") .
+    }
+    """
+
+  // Construct a graph where everything which is a Thing is asserted to exist
+  // This tests CONSTRUCT with prefixes and custom IRIs
+  val q31 = """
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    PREFIX owl: <http://www.w3.org/2002/07/owl#>
+    CONSTRUCT {?x <test_schema#ontologyExists> true} WHERE {
+        ?x rdfs:subClassOf owl:Thing
+    }
+    """
+
+  // Construct a graph where all the terms derived from a species have a new relation
+  // joining them to their species source.
+  // This probably only produces results with CLO.
+  val q32 = """
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    PREFIX owl: <http://www.w3.org/2002/07/owl#>
+    PREFIX obo-term: <http://purl.obolibrary.org/obo/>
+    CONSTRUCT {?cell_line <test_schema#sourceSpecies> ?species} WHERE {
+        ?cell_line rdfs:subClassOf ?derived_node .
+        ?derived_node a owl:Restriction;
+            owl:onProperty obo-term:RO_0001000;
+            owl:someValuesFrom ?species_node .
+        ?species_node a owl:Restriction;
+            owl:onProperty obo-term:BFO_0000050;
+            owl:someValuesFrom ?species .
+    }
+    """
+
+  // Detect punned relations in an ontology
+  // This is when a node is used both as a class and a property
+  // It breaks some OWL parsers and these terms should be cleaned up or
+  // removed if possible
+  val q33 = """
+    PREFIX owl: <http://www.w3.org/2002/07/owl#>
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+    SELECT ?s ?o
+    WHERE {
+         ?s a ?o .
+         ?o rdfs:subClassOf rdf:Property .
+         ?s a owl:Class .
+    }
+    """
+
+  // Construct a triple where the predicate is derived
+  // from the object of a triple in the WHERE clause.
+  // This works on the semantic network file only.
+  // Also tests UNION.
+  val q34 = """
+    PREFIX  litp:  <http://lit-search-api/property/>
+    PREFIX  sn: <http://gsk-kg.rdip.gsk.com/semanticnetwork/>
+    CONSTRUCT
+    {
+        ?c1 ?rel ?c2 .
+        ?rel litp:name ?relstr .
+    }
+    WHERE
+    {
+        {
+            ?lnk sn:STY_RL1 ?c1 .
+            ?lnk sn:RL ?rel .
+            ?rel sn:STY_RL ?relstr .
+            ?lnk sn:STY_RL2 ?c2 .
+        }
+        UNION
+        {
+            ?lnk sn:STY1 ?c1 .
+            ?lnk sn:RL ?rel .
+            ?rel sn:STY_RL ?relstr .
+            ?lnk sn:STY2 ?c2 .
+        }
+    }
+    """
+
+  // Query to convert schema of predications.
+  // Can be run on literature-extracted triples.
+  // Tests CONSTRUCT, BIND, join over blank nodes,
+  // and OPTIONAL.
+  val q35 = """
+    PREFIX  dm:   <http://gsk-kg.rdip.gsk.com/dm/1.0/>
+    PREFIX  litp:  <http://lit-search-api/property/>
+    PREFIX  lita:  <http://lit-search-api/attribute/>
+    PREFIX  xsd:  <http://www.w3.org/2001/XMLSchema#>
+    CONSTRUCT
+    {
+        ?docsec litp:containsPredication ?pred .
+        ?pred litp:hasSubj ?detentSubj .
+        ?pred litp:hasObj ?detentObj .
+        ?pred lita:docId ?docid .
+        ?pred lita:relationClass ?cls .
+        ?pred lita:confidence ?conf .
+        ?conf a xsd:float .
+    }
+    WHERE
+    {
+        ?d a dm:Document .
+        ?d dm:contains ?ds .
+        ?ds a dm:DocSection .
+        ?ds dm:contains ?te .
+        ?te a dm:TextElement .
+        ?te dm:contains ?p .
+        ?p a dm:Predication .
+        ?p dm:hasSubject ?deSubj .
+        ?p dm:hasObject ?deObj .
+        ?p dm:predRelation ?b .
+        ?b dm:predClass ?cls .
+        OPTIONAL { ?b dm:confidence ?conf }
+        BIND(STRAFTER(str(?d), "#") as ?docid) .
+        BIND(STRAFTER(str(?ds), "#") as ?secid) .
+        BIND(URI(CONCAT("http://lit-search-api/node/docsec#", ?secid)) as ?docsec) .
+        BIND(STRAFTER(str(?deSubj), "#") as ?entidSubj) .
+        BIND(URI(CONCAT("http://lit-search-api/node/entity#", ?entidSubj)) as ?detentSubj) .
+        BIND(STRAFTER(str(?deObj), "#") as ?entidObj) .
+        BIND(URI(CONCAT("http://lit-search-api/node/entity#", ?entidObj)) as ?detentObj) .
+        BIND(STRAFTER(str(?p), "#") as ?predid) .
+        BIND(URI(CONCAT("http://lit-search-api/node/predication#", ?predid)) as ?pred)
+    }
+    """
 }

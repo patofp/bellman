@@ -2,7 +2,7 @@ package com.gsk.kg.sparql
 
 import com.gsk.kg.sparqlparser.Expr._
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
-import com.gsk.kg.sparqlparser.{Expr, FilterFunction, StringLike}
+import com.gsk.kg.sparqlparser.{Expr, Expression, FilterFunction, StringLike}
 
 trait Visitor[T] {
   def visitTriple(triple: Triple): T
@@ -11,13 +11,13 @@ trait Visitor[T] {
 
   def visitLeftJoin(left: T, right: T): T
 
-  def visitFilteredLeftJoinVisitor(left: T, right: T, f: FilterFunction): T
+  def visitFilteredLeftJoinVisitor(left: T, right: T, f: Expression): T
 
   def visitUnion(left: T, right: T): T
 
-  def visitExtend(to: StringLike, from: StringLike, d: T): T
+  def visitExtend(to: VARIABLE, from: Expression, d: T): T
 
-  def visitFilter(funcs: Seq[FilterFunction], d: T): T
+  def visitFilter(funcs: Seq[Expression], d: T): T
 
   def visitJoin(l: T, r: T): T
 
