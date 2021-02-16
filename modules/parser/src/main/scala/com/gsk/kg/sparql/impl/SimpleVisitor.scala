@@ -3,6 +3,7 @@ package com.gsk.kg.sparql.impl
 import com.gsk.kg.sparql.{Visitor, Visitors}
 import com.gsk.kg.sparqlparser._
 import ExprToText._
+import com.gsk.kg.sparqlparser.StringVal.VARIABLE
 
 class SimpleVisitor extends Visitor[String] {
   override def visitTriple(triple: Expr.Triple): String = {
@@ -25,7 +26,7 @@ class SimpleVisitor extends Visitor[String] {
     s"{$left}\nUnion {$right}\n"
   }
 
-  override def visitExtend(to: Expression, from: Expression, d: String): String = { //bind
+  override def visitExtend(to: VARIABLE, from: Expression, d: String): String = { //bind
     s"${d}BIND(${from.text} as ${to.text}) .\n"
   }
 

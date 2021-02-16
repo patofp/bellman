@@ -157,7 +157,6 @@ class QuerySamplesTestSpec extends AnyFlatSpec {
   "Test BIND in another position in the query" should "parse to same as q12" ignore {
     val query = QuerySamples.q13
     val expr = QueryConstruct.parseADT(query)
-    println(expr)
     expr match {
       case Project(vs, Filter(funcs,Extend(to,from,BGP(_)))) =>
         assert(vs.nonEmpty && vs.size == 3)

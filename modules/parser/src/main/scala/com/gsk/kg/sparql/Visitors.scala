@@ -15,7 +15,7 @@ trait Visitor[T] {
 
   def visitUnion(left: T, right: T): T
 
-  def visitExtend(to: Expression, from: Expression, d: T): T
+  def visitExtend(to: VARIABLE, from: Expression, d: T): T
 
   def visitFilter(funcs: Seq[Expression], d: T): T
 
