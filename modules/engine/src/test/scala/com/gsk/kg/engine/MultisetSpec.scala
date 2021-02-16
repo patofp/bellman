@@ -137,6 +137,81 @@ class MultisetSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     )
   }
 
+  "Multiset.union" should "work both sides are empty" in {
+    val ms1 = Multiset(Set.empty, spark.emptyDataFrame)
+    val ms2 = Multiset(Set.empty, spark.emptyDataFrame)
+
+    assertMultisetEquals(
+      ms1.union(ms2),
+      Multiset(Set.empty, spark.emptyDataFrame)
+    )
+  }
+
+  it should "work when left side is empty" in {
+    import sqlContext.implicits._
+
+    val ms1 = Multiset(Set.empty, spark.emptyDataFrame)
+    val ms2 = Multiset(Set(VARIABLE("a")), List("A", "B", "C").toDF("a"))
+
+    assertMultisetEquals(
+      ms1.union(ms2),
+      ms2
+    )
+  }
+
+  it should "work when right side is empty" in {
+    import sqlContext.implicits._
+
+    val ms1 = Multiset(Set(VARIABLE("a")), List("A", "B", "C").toDF("a"))
+    val ms2 = Multiset(Set.empty, spark.emptyDataFrame)
+
+    assertMultisetEquals(
+      ms1.union(ms2),
+      ms1
+    )
+  }
+
+  it should "union two multisets with the same bindings" in {
+    import sqlContext.implicits._
+
+    val a = VARIABLE("a")
+    val b = VARIABLE("b")
+
+    val ms1 = Multiset(Set(a, b), List(("A", "1"), ("B", "2"), ("C", "3")).toDF(a.s, b.s))
+    val ms2 = Multiset(Set(a, b), List(("D", "4"), ("E", "5"), ("F", "6")).toDF(a.s, b.s))
+
+    assertMultisetEquals(
+      ms1.union(ms2),
+      Multiset(
+        Set(a, b),
+        List(("A", "1"), ("B", "2"), ("C", "3"), ("D", "4"), ("E", "5"), ("F", "6")).toDF("a", "b")
+      )
+    )
+  }
+
+  it should "union two multisets with different bindings" in {
+    import sqlContext.implicits._
+
+    val a = VARIABLE("a")
+    val b = VARIABLE("b")
+    val c = VARIABLE("c")
+
+    val ms1 = Multiset(Set(a, b), List(("A", "1"), ("B", "2"), ("C", "3")).toDF(a.s, b.s))
+    val ms2 = Multiset(Set(c), List("CC").toDF(c.s))
+
+    assertMultisetEquals(
+      ms1.union(ms2),
+      Multiset(
+        Set(a, b, c),
+        List(
+          ("A" ,"1" ,null),
+          ("B" ,"2" ,null),
+          ("C" ,"3" ,null),
+          (null,null,"CC")).toDF(a.s, b.s, c.s)
+      )
+    )
+  }
+
   def assertMultisetEquals(ms1: Multiset, ms2: Multiset): Unit = {
     assert(ms1.bindings === ms2.bindings, "bindings are different")
     assert(

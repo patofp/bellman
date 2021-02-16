@@ -32,24 +32,7 @@ object Engine {
 
   def evaluateAlgebraM(implicit sc: SQLContext): AlgebraM[M, ExprF, Multiset] =
     AlgebraM[M, ExprF, Multiset] {
-      case BGPF(triples) =>
-        import sc.implicits._
-        StateT.get[Result, DataFrame].map { df: DataFrame =>
-          Foldable[List].fold(
-            triples.toList.map({ triple =>
-              val predicate = Predicate.fromTriple(triple)
-              val current = applyPredicateToDataFrame(predicate, df)
-              val variables = triple.getVariables
-              val selected =
-                current.select(variables.map(v => $"${v._2}".as(v._1.s)): _*)
-
-              Multiset(
-                variables.map(_._1.asInstanceOf[StringVal.VARIABLE]).toSet,
-                selected
-              )
-            })
-          )
-        }
+      case BGPF(triples) => evaluateBGPF(triples)
       case TripleF(s, p, o) =>
         StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
       case LeftJoinF(l, r) =>
@@ -57,7 +40,7 @@ object Engine {
       case FilteredLeftJoinF(l, r, f) =>
         StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
       case UnionF(l, r) =>
-        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
+        l.union(r).pure[M]
       case ExtendF(bindTo, bindFrom, r) =>
         StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
       case FilterF(funcs, expr) =>
@@ -86,6 +69,29 @@ object Engine {
       scheme.cataM[M, ExprF, Expr, Multiset](evaluateAlgebraM)
 
     eval(query).runA(dataframe).map(_.dataframe)
+  }
+
+  private def evaluateBGPF(
+      triples: Seq[Expr.Triple]
+  )(implicit sc: SQLContext) = {
+    import sc.implicits._
+    StateT.get[Result, DataFrame].map { df: DataFrame =>
+      Foldable[List].fold(
+        triples.toList.map({ triple =>
+          val predicate = Predicate.fromTriple(triple)
+          val current = applyPredicateToDataFrame(predicate, df)
+          val variables = triple.getVariables
+          val selected =
+            current.select(variables.map(v => $"${v._2}".as(v._1.s)): _*)
+
+          Multiset(
+            variables.map(_._1.asInstanceOf[StringVal.VARIABLE]).toSet,
+            selected
+          )
+        })
+      )
+    }
+
   }
 
   private def applyPredicateToDataFrame(
