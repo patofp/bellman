@@ -103,7 +103,7 @@ final case class Multiset(
         def genColumns(current: Set[String], total: Set[String]) = {
           total.map(x => x match {
             case x if current.contains(x) => col(x)
-            case _ => lit(null).as(x)
+            case _ => lit(null).as(x) // scalastyle:ignore
           }).toList
         }
 
