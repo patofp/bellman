@@ -17,14 +17,10 @@ import com.gsk.kg.sparqlparser.StringVal
 import com.gsk.kg.engine.Multiset._
 import cats.Foldable
 import com.gsk.kg.engine.Predicate.None
+import com.gsk.kg.sparqlparser.Query
+import com.gsk.kg.sparqlparser.Query.Construct
 
 object Engine {
-
-  sealed trait EngineError
-
-  object EngineError {
-    case class General(description: String) extends EngineError
-  }
 
   type Result[A] = Either[EngineError, A]
   val Result = Either
@@ -61,14 +57,17 @@ object Engine {
 
   def evaluate(
       dataframe: DataFrame,
-      query: Expr
+      query: Query
   )(implicit
       sc: SQLContext
   ): Result[DataFrame] = {
     val eval =
       scheme.cataM[M, ExprF, Expr, Multiset](evaluateAlgebraM)
 
-    eval(query).runA(dataframe).map(_.dataframe)
+    eval(query.r)
+      .runA(dataframe)
+      .map(_.dataframe)
+      .map(QueryExecutor.execute(query))
   }
 
   private def evaluateBGPF(
