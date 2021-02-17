@@ -154,11 +154,11 @@ class QuerySamplesTestSpec extends AnyFlatSpec {
   }
 
   // ignore for now since for diff position, Jena generates different representations
-  "Test BIND in another position in the query" should "parse to same as q12" ignore {
+  "Test BIND in another position in the query" should "parse to same as q12" in {
     val query = QuerySamples.q13
     val expr = QueryConstruct.parseADT(query)
     expr match {
-      case Project(vs, Filter(funcs,Extend(to,from,BGP(_)))) =>
+      case Project(vs, Filter(funcs, Join(Extend(to,from,TabUnit()),BGP(_)))) =>
         assert(vs.nonEmpty && vs.size == 3)
         assert(funcs.size == 1)
         assert(to == VARIABLE("?o"))

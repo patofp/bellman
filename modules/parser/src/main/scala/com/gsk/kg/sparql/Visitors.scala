@@ -30,6 +30,8 @@ trait Visitor[T] {
   def visitDistinct(e: T): T
 
   def visitOpNil: T
+
+  def visitTabUnit: T
 }
 
 object Visitors {
@@ -70,6 +72,7 @@ object Visitors {
       case Distinct(r) =>
         visitor.visitDistinct(dispatch(r,visitor))
       case OpNil() => visitor.visitOpNil
+      case TabUnit() => visitor.visitTabUnit
 
 
     }
