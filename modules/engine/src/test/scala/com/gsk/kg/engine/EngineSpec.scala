@@ -106,7 +106,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     )
   }
 
-  it should "execute a CONSTRUCT with a single graph pattern" in {
+  it should "execute a CONSTRUCT with a single triple pattern" in {
     import sqlContext.implicits._
 
     val df: DataFrame = dfList.toDF("s", "p", "o")
@@ -124,6 +124,36 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
         "test",
         "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
         "<http://id.gsk.com/dm/1.0/Document>"
+      )
+    )
+
+  }
+
+  it should "execute a CONSTRUCT with more than one triple pattern" in {
+    import sqlContext.implicits._
+
+    val df: DataFrame = dfList.toDF("s", "p", "o")
+
+    val query = sparql"""
+      CONSTRUCT {
+        ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?o .
+        ?s2 <http://id.gsk.com/dm/1.0/docSource> ?o2
+      } WHERE {
+        ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?o .
+        ?s2 <http://id.gsk.com/dm/1.0/docSource> ?o2
+      }
+      """
+
+    val dff = Engine.evaluate(df, query).right.get.collect() shouldEqual Array(
+      Row(
+        "test",
+        "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+        "<http://id.gsk.com/dm/1.0/Document>"
+      ),
+      Row(
+        "test",
+        "<http://id.gsk.com/dm/1.0/docSource>",
+        "source"
       )
     )
 
