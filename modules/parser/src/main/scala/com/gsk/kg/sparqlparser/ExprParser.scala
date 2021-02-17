@@ -20,7 +20,8 @@ object ExprParser {
   def offsetLimit[_:P]:P[Unit] = P("slice")
   def distinct[_:P]:P[Unit] = P("distinct")
 
-  def opNull[_:P]:P[OpNil] = P("(null)").map(_ => OpNil())
+  def opNull[_:P]:P[OpNil] = P("(null)").map(_=>OpNil())
+  def tableUnit[_:P]:P[TabUnit]= P("(table unit)").map(_=>TabUnit())
 
   def selectParen[_:P]:P[Project] = P("(" ~ select ~ "(" ~ (StringValParser.variable).rep(1) ~ ")" ~ graphPattern ~ ")")
     .map(p => Project(p._1, p._2))
@@ -66,6 +67,7 @@ object ExprParser {
   def unionParen[_:P]:P[Union] = P("(" ~ union ~ graphPattern ~ graphPattern ~ ")").map {
     u => Union(u._1, u._2)
   }
+
   def extendParen[_:P]:P[Extend] = P("(" ~
     extend ~ "((" ~ (StringValParser.variable) ~
     (StringValParser.tripleValParser | StringFuncParser.parser | FilterFunctionParser.parser) ~ "))" ~
@@ -94,7 +96,8 @@ object ExprParser {
       | extendParen
       | filterSingleParen
       | filterListParen
-      | opNull)
+      | opNull
+      | tableUnit)
 
   def parser[_:P]:P[Expr] = P(graphPattern)
 }

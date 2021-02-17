@@ -61,6 +61,8 @@ class SimpleVisitor extends Visitor[String] {
   override def visitDistinct(e: String): String = s"DISTINCT ${e} "
 
   override def visitOpNil: String = ""
+
+  override def visitTabUnit: String = ""
 }
 
 object SimpleVisitor {
