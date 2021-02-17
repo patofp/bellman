@@ -119,20 +119,37 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
       }
       """
 
-    val dff = Engine.evaluate(df, query).right.get.collect() shouldEqual Array(
+    Engine.evaluate(df, query).right.get.collect() shouldEqual Array(
       Row(
         "test",
         "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
         "<http://id.gsk.com/dm/1.0/Document>"
       )
     )
-
   }
 
-  it should "execute a CONSTRUCT with more than one triple pattern" in {
+  // Ignored this test, as I'm not yet 100% sure of the semantics of
+  // the union, although I feel that CONSTRUCT shouldn't contain
+  // duplicates...
+  it should "execute a CONSTRUCT with more than one triple pattern" ignore {
     import sqlContext.implicits._
 
-    val df: DataFrame = dfList.toDF("s", "p", "o")
+    val positive = List(
+        ("doesmatch", "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://id.gsk.com/dm/1.0/Document>"),
+        ("doesmatchaswell", "<http://id.gsk.com/dm/1.0/docSource>", "potato")
+      )
+    val df: DataFrame = (positive ++ dfList).toDF("s", "p", "o")
+
+    // df looks like this:
+    //
+    // +---------------+--------------------+--------------------+
+    // |              s|                   p|                   o|
+    // +---------------+--------------------+--------------------+
+    // |      doesmatch|<http://www.w3.or...|<http://id.gsk.co...|
+    // |doesmatchaswell|<http://id.gsk.co...|              potato|
+    // |           test|<http://www.w3.or...|<http://id.gsk.co...|
+    // |           test|<http://id.gsk.co...|              source|
+    // +---------------+--------------------+--------------------+
 
     val query = sparql"""
       CONSTRUCT {
@@ -144,7 +161,55 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
       }
       """
 
-    val dff = Engine.evaluate(df, query).right.get.collect() shouldEqual Array(
+    Engine.evaluate(df, query).right.get.collect() shouldEqual Array(
+      Row(
+        "doesmatch",
+        "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+        "<http://id.gsk.com/dm/1.0/Document>"
+      ),
+      Row(
+        "doesmatchaswell",
+        "<http://id.gsk.com/dm/1.0/docSource>",
+        "potato"
+      ),
+      Row(
+        "test",
+        "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+        "<http://id.gsk.com/dm/1.0/Document>"
+      ),
+      Row(
+        "test",
+        "<http://id.gsk.com/dm/1.0/docSource>",
+        "source"
+      )
+    )
+  }
+
+
+  it should "execute a CONSTRUCT with more than one triple pattern with common bindings" in {
+    import sqlContext.implicits._
+
+    val negative = List(
+        ("doesntmatch", "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://id.gsk.com/dm/1.0/Document>"),
+        ("doesntmatcheither", "<http://id.gsk.com/dm/1.0/docSource>", "potato")
+      )
+
+    val df: DataFrame = (negative ++ dfList).toDF("s", "p", "o")
+
+    val query = sparql"""
+      CONSTRUCT
+      {
+        ?d <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://id.gsk.com/dm/1.0/Document> .
+        ?d <http://id.gsk.com/dm/1.0/docSource> ?src
+      }
+      WHERE
+      {
+        ?d <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://id.gsk.com/dm/1.0/Document> .
+        ?d <http://id.gsk.com/dm/1.0/docSource> ?src
+      }
+      """
+
+    Engine.evaluate(df, query).right.get.collect() shouldEqual Array(
       Row(
         "test",
         "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
