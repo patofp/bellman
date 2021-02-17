@@ -63,7 +63,7 @@ lazy val commonDependencies = Seq(
   )
 )
 
-lazy val root = project
+lazy val bellman = project
   .in(file("."))
   .settings(buildSettings)
   .settings(noPublishSettings)
