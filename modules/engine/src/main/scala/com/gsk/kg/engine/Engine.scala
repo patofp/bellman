@@ -20,12 +20,6 @@ import com.gsk.kg.engine.Predicate.None
 
 object Engine {
 
-  sealed trait EngineError
-
-  object EngineError {
-    case class General(description: String) extends EngineError
-  }
-
   type Result[A] = Either[EngineError, A]
   val Result = Either
   type M[A] = StateT[Result, DataFrame, A]
