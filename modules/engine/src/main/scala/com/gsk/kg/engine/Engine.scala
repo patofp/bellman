@@ -17,6 +17,8 @@ import com.gsk.kg.sparqlparser.StringVal
 import com.gsk.kg.engine.Multiset._
 import cats.Foldable
 import com.gsk.kg.engine.Predicate.None
+import com.gsk.kg.sparqlparser.Query
+import com.gsk.kg.sparqlparser.Query.Construct
 
 object Engine {
 
@@ -55,15 +57,50 @@ object Engine {
 
   def evaluate(
       dataframe: DataFrame,
-      query: Expr
+      query: Query
   )(implicit
       sc: SQLContext
   ): Result[DataFrame] = {
     val eval =
       scheme.cataM[M, ExprF, Expr, Multiset](evaluateAlgebraM)
 
-    eval(query).runA(dataframe).map(_.dataframe)
+    eval(query.r)
+      .runA(dataframe)
+      .map(_.dataframe)
+      .map(qqq(query))
   }
+
+  private def qqq(
+      query: Query
+  )(df: DataFrame)(implicit sc: SQLContext): DataFrame =
+    query match {
+      case Construct(vars, bgp, r) =>
+        import sc.implicits._
+        val acc = List.empty[(String, String, String)].toDF("s", "p", "o")
+
+        bgp.triples
+          .map({ triple =>
+            import org.apache.spark.sql.functions._
+
+            val cols = (triple.getVariables ++ triple.getPredicates)
+
+            cols
+              .foldLeft(df)({
+                case (df, (sv, pos)) =>
+                  if (df.columns.contains(sv.s)) {
+                    df.withColumnRenamed(sv.s, pos)
+                  } else {
+                    df.withColumn(pos, lit(sv.s))
+                  }
+              })
+              .select("s", "p", "o")
+          })
+          .foldLeft(acc) { (acc, other) =>
+            acc.union(other)
+          }
+
+      case _ => df
+    }
 
   private def evaluateBGPF(
       triples: Seq[Expr.Triple]

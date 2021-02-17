@@ -23,6 +23,10 @@ object Expr {
     def getVariables: List[(StringVal, String)] = {
       List((s, "s"),(p, "p"),(o, "o")).filter(_._1.isVariable)
     }
+
+    def getPredicates: List[(StringVal, String)] = {
+      List((s, "s"),(p, "p"),(o, "o")).filter(!_._1.isVariable)
+    }
   }
   final case class LeftJoin(l:Expr, r:Expr) extends Expr
   final case class FilteredLeftJoin(l:Expr, r:Expr, f:Expression) extends Expr
