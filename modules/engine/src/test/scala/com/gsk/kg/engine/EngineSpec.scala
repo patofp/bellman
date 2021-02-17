@@ -128,10 +128,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     )
   }
 
-  // Ignored this test, as I'm not yet 100% sure of the semantics of
-  // the union, although I feel that CONSTRUCT shouldn't contain
-  // duplicates...
-  it should "execute a CONSTRUCT with more than one triple pattern" ignore {
+  it should "execute a CONSTRUCT with more than one triple pattern" in {
     import sqlContext.implicits._
 
     val positive = List(
@@ -139,17 +136,6 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
         ("doesmatchaswell", "<http://id.gsk.com/dm/1.0/docSource>", "potato")
       )
     val df: DataFrame = (positive ++ dfList).toDF("s", "p", "o")
-
-    // df looks like this:
-    //
-    // +---------------+--------------------+--------------------+
-    // |              s|                   p|                   o|
-    // +---------------+--------------------+--------------------+
-    // |      doesmatch|<http://www.w3.or...|<http://id.gsk.co...|
-    // |doesmatchaswell|<http://id.gsk.co...|              potato|
-    // |           test|<http://www.w3.or...|<http://id.gsk.co...|
-    // |           test|<http://id.gsk.co...|              source|
-    // +---------------+--------------------+--------------------+
 
     val query = sparql"""
       CONSTRUCT {
@@ -161,7 +147,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
       }
       """
 
-    Engine.evaluate(df, query).right.get.collect() shouldEqual Array(
+    Engine.evaluate(df, query).right.get.collect().toSet shouldEqual Set(
       Row(
         "doesmatch",
         "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
@@ -209,7 +195,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
       }
       """
 
-    Engine.evaluate(df, query).right.get.collect() shouldEqual Array(
+    Engine.evaluate(df, query).right.get.collect().toSet shouldEqual Set(
       Row(
         "test",
         "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",

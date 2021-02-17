@@ -34,7 +34,7 @@ object QueryExecutor {
           })
           .foldLeft(acc) { (acc, other) =>
             acc.union(other)
-          }
+          }.dropDuplicates()
 
       case _ => df
     }
