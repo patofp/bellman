@@ -29,7 +29,7 @@ object Expr {
     }
   }
   final case class LeftJoin(l:Expr, r:Expr) extends Expr
-  final case class FilteredLeftJoin(l:Expr, r:Expr, f:Expression) extends Expr
+  final case class FilteredLeftJoin(l:Expr, r:Expr, f:Seq[Expression]) extends Expr
   final case class Union(l:Expr, r:Expr) extends Expr
   final case class Extend(bindTo:VARIABLE, bindFrom:Expression, r:Expr) extends Expr
   final case class Filter(funcs:Seq[Expression], expr:Expr) extends Expr
