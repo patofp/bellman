@@ -34,7 +34,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     ("test", "<http://id.gsk.com/dm/1.0/docSource>", "source")
   )
 
-  "Engine" should "perform query operations in the dataframe" ignore {
+  "Engine" should "perform query operations in the dataframe" in {
     import sqlContext.implicits._
 
     val df = dfList.toDF("s", "p", "o")
@@ -49,7 +49,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     Engine.evaluate(df, query).right.get.collect() shouldEqual df.collect()
   }
 
-  it should "execute a query with two dependent BGPs" ignore {
+  it should "execute a query with two dependent BGPs" in {
     import sqlContext.implicits._
 
     val df: DataFrame = dfList.toDF("s", "p", "o")
@@ -68,7 +68,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     )
   }
 
-  it should "execute a UNION query BGPs with the same bindings" ignore {
+  it should "execute a UNION query BGPs with the same bindings" in {
     import sqlContext.implicits._
 
     val df: DataFrame = (("does", "not", "match") :: dfList).toDF("s", "p", "o")
@@ -89,7 +89,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     )
   }
 
-  it should "execute a UNION query BGPs with different bindings" ignore {
+  it should "execute a UNION query BGPs with different bindings" in {
     import sqlContext.implicits._
 
     val df: DataFrame = (("does", "not", "match") :: dfList).toDF("s", "p", "o")
@@ -110,7 +110,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     )
   }
 
-  it should "execute a CONSTRUCT with a single triple pattern" ignore {
+  it should "execute a CONSTRUCT with a single triple pattern" in {
     import sqlContext.implicits._
 
     val df: DataFrame = dfList.toDF("s", "p", "o")
@@ -132,7 +132,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     )
   }
 
-  it should "execute a CONSTRUCT with more than one triple pattern" ignore {
+  it should "execute a CONSTRUCT with more than one triple pattern" in {
     import sqlContext.implicits._
 
     val positive = List(
@@ -176,7 +176,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
   }
 
 
-  it should "execute a CONSTRUCT with more than one triple pattern with common bindings" ignore {
+  it should "execute a CONSTRUCT with more than one triple pattern with common bindings" in {
     import sqlContext.implicits._
 
     val negative = List(
@@ -214,11 +214,32 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
   }
 
-  it should "lalalala" in {
+  it should "query a real DF with a real query" in {
+    val query = sparql"""
+      PREFIX  schema: <http://schema.org/>
+      PREFIX  rdf:  <http://www.w3.org/2000/01/rdf-schema#>
+      PREFIX  xml:  <http://www.w3.org/XML/1998/namespace>
+      PREFIX  dm:   <http://gsk-kg.rdip.gsk.com/dm/1.0/>
+      PREFIX  prism: <http://prismstandard.org/namespaces/basic/2.0/>
+      PREFIX  litg:  <http://lit-search-api/graph/>
+      PREFIX  litn:  <http://lit-search-api/node/>
+      PREFIX  lite:  <http://lit-search-api/edge/>
+      PREFIX  litp:  <http://lit-search-api/property/>
 
+      CONSTRUCT {
+        ?Document a litn:Document .
+        ?Document litp:docID ?docid .
+      }
+      WHERE{
+        ?d a dm:Document .
+        BIND(STRAFTER(str(?d), "#") as ?docid) .
+        BIND(URI(CONCAT("http://lit-search-api/node/doc#", ?docid)) as ?Document) .
+      }
+      """
 
-    readNTtoDF("fixtures/reference-q1-input.nt").show
-    //spark.read.text(path).toDF().show
+    val inputDF = readNTtoDF("fixtures/reference-q1-input.nt")
+
+    Engine.evaluate(inputDF, query).right.get.show
   }
 
   private def readNTtoDF(path: String) = {
