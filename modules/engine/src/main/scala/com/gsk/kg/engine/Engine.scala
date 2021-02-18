@@ -30,31 +30,31 @@ object Engine {
     AlgebraM[M, ExprF, Multiset] {
       case BGPF(triples) => evaluateBGPF(triples)
       case TripleF(s, p, o) =>
-        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
+        StateT.liftF[Result, DataFrame, Multiset](EngineError.General("TripleF not implemented").asLeft[Multiset])
       case LeftJoinF(l, r) =>
-        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
+        StateT.liftF[Result, DataFrame, Multiset](EngineError.General("LeftJoinF not implemented").asLeft[Multiset])
       case FilteredLeftJoinF(l, r, f) =>
-        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
+        StateT.liftF[Result, DataFrame, Multiset](EngineError.General("FilteredLeftJoinF not implemented").asLeft[Multiset])
       case UnionF(l, r) =>
         l.union(r).pure[M]
       case ExtendF(bindTo, bindFrom, r) =>
-        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
+        StateT.liftF[Result, DataFrame, Multiset](EngineError.General("ExtendF not implemented").asLeft[Multiset])
       case FilterF(funcs, expr) =>
-        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
+        StateT.liftF[Result, DataFrame, Multiset](EngineError.General("FilterF not implemented").asLeft[Multiset])
       case JoinF(l, r) =>
-        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
+        StateT.liftF[Result, DataFrame, Multiset](EngineError.General("JoinF not implemented").asLeft[Multiset])
       case GraphF(g, e) =>
-        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
+        StateT.liftF[Result, DataFrame, Multiset](EngineError.General("GraphF not implemented").asLeft[Multiset])
       case DistinctF(r) =>
-        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
+        StateT.liftF[Result, DataFrame, Multiset](EngineError.General("DistinctF not implemented").asLeft[Multiset])
       case OffsetLimitF(offset, limit, r) =>
-        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
+        StateT.liftF[Result, DataFrame, Multiset](EngineError.General("OffsetLimitF not implemented").asLeft[Multiset])
       case OpNilF() =>
-        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
+        StateT.liftF[Result, DataFrame, Multiset](EngineError.General("OpNilF not implemented").asLeft[Multiset])
       case ProjectF(vars, r) =>
         r.select(vars: _*).pure[M]
       case TabUnitF() =>
-        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
+        StateT.liftF[Result, DataFrame, Multiset](EngineError.General("TabUnitF not implemented").asLeft[Multiset])
     }
 
   def evaluate(
