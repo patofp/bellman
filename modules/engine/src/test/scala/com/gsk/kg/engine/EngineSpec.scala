@@ -14,6 +14,10 @@ import org.scalatest.BeforeAndAfterAll
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.apache.spark.sql.Row
 import com.gsk.kg.sparqlparser.Query
+import org.apache.jena.riot.RDFDataMgr
+import org.apache.jena.rdf.model.Model
+import org.apache.jena.riot.lang.CollectorStreamTriples
+import org.apache.jena.riot.RDFParser
 
 class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
@@ -30,7 +34,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     ("test", "<http://id.gsk.com/dm/1.0/docSource>", "source")
   )
 
-  "Engine" should "perform query operations in the dataframe" in {
+  "Engine" should "perform query operations in the dataframe" ignore {
     import sqlContext.implicits._
 
     val df = dfList.toDF("s", "p", "o")
@@ -45,7 +49,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     Engine.evaluate(df, query).right.get.collect() shouldEqual df.collect()
   }
 
-  it should "execute a query with two dependent BGPs" in {
+  it should "execute a query with two dependent BGPs" ignore {
     import sqlContext.implicits._
 
     val df: DataFrame = dfList.toDF("s", "p", "o")
@@ -64,7 +68,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     )
   }
 
-  it should "execute a UNION query BGPs with the same bindings" in {
+  it should "execute a UNION query BGPs with the same bindings" ignore {
     import sqlContext.implicits._
 
     val df: DataFrame = (("does", "not", "match") :: dfList).toDF("s", "p", "o")
@@ -85,7 +89,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     )
   }
 
-  it should "execute a UNION query BGPs with different bindings" in {
+  it should "execute a UNION query BGPs with different bindings" ignore {
     import sqlContext.implicits._
 
     val df: DataFrame = (("does", "not", "match") :: dfList).toDF("s", "p", "o")
@@ -106,7 +110,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     )
   }
 
-  it should "execute a CONSTRUCT with a single triple pattern" in {
+  it should "execute a CONSTRUCT with a single triple pattern" ignore {
     import sqlContext.implicits._
 
     val df: DataFrame = dfList.toDF("s", "p", "o")
@@ -128,7 +132,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     )
   }
 
-  it should "execute a CONSTRUCT with more than one triple pattern" in {
+  it should "execute a CONSTRUCT with more than one triple pattern" ignore {
     import sqlContext.implicits._
 
     val positive = List(
@@ -172,7 +176,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
   }
 
 
-  it should "execute a CONSTRUCT with more than one triple pattern with common bindings" in {
+  it should "execute a CONSTRUCT with more than one triple pattern with common bindings" ignore {
     import sqlContext.implicits._
 
     val negative = List(
@@ -207,6 +211,31 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
         "source"
       )
     )
+
+  }
+
+  it should "lalalala" in {
+
+
+    readNTtoDF("fixtures/reference-q1-input.nt").show
+    //spark.read.text(path).toDF().show
+  }
+
+  private def readNTtoDF(path: String) = {
+    import sqlContext.implicits._
+    import scala.collection.JavaConverters._
+
+    val filename = s"modules/engine/src/test/resources/$path"
+    val inputStream: CollectorStreamTriples = new CollectorStreamTriples();
+    RDFParser.source(filename).parse(inputStream);
+
+    inputStream
+      .getCollected()
+      .asScala
+      .toList
+      .map(triple =>
+        (triple.getSubject().toString(), triple.getPredicate().toString(), triple.getObject().toString())
+      ).toDF("s", "p", "o")
 
   }
 
