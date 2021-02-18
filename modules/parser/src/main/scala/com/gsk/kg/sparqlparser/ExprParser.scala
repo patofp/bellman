@@ -1,6 +1,7 @@
 package com.gsk.kg.sparqlparser
 
 import com.gsk.kg.sparqlparser.Expr._
+import com.gsk.kg.sparqlparser.ParserError.UnExpectedType
 import fastparse.MultiLineWhitespace._
 import fastparse._
 
@@ -50,8 +51,9 @@ object ExprParser {
 
   def exprFuncList[_:P]:P[Seq[Expression]] = (filterExprList | exprFunc).map { p =>
     p match {
-      case e: Seq[Expression] => e
+      case e: Seq[_] => e.asInstanceOf[Seq[Expression]]
       case e: Expression => Seq(e)
+      case _ => throw UnExpectedType(s"${p} does not match any sparql expression type.")
     }
   }
 
