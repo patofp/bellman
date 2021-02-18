@@ -239,7 +239,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
     val inputDF = readNTtoDF("fixtures/reference-q1-input.nt")
 
-    Engine.evaluate(inputDF, query).right.get.show
+    Engine.evaluate(inputDF, query) shouldBe a[Right[_, _]]
   }
 
   private def readNTtoDF(path: String) = {

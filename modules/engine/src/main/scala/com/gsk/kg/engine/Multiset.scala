@@ -6,6 +6,7 @@ import org.apache.spark.sql.DataFrame
 import cats.kernel.Semigroup
 import org.apache.spark.sql.SQLContext
 import cats.kernel.Monoid
+import org.apache.spark.sql.Column
 
 
 /**
@@ -112,6 +113,17 @@ final case class Multiset(
           aDF.select(genColumns(colsA, union):_*).unionAll(bDF.select(genColumns(colsB, union):_*))
         )
     }
+
+  def applyFunc(
+    binding: VARIABLE,
+    col: Column,
+    fn: Column => Column
+  ): Multiset =
+    Multiset(
+      bindings + binding,
+      dataframe
+        .withColumn(binding.s, fn(col))
+    )
 
 }
 
