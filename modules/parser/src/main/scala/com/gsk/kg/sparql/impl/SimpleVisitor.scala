@@ -18,8 +18,9 @@ class SimpleVisitor extends Visitor[String] {
     s"${left}OPTIONAL{$right}\n"
   }
 
-  override def visitFilteredLeftJoinVisitor(left: String, right: String, f: Expression): String = { //when optional follow with filter
-    s"${left}OPTIONAL{${right}FILTER(${f.text})}\n"
+  override def visitFilteredLeftJoinVisitor(left: String, right: String, f: Seq[Expression]): String = { //when optional follow with filter
+    val exp = f.map(e =>s"FILTER(${e.text})").mkString("\n")
+    s"${left}OPTIONAL{${right}${exp}}\n"
   }
 
   override def visitUnion(left: String, right: String): String = { //union

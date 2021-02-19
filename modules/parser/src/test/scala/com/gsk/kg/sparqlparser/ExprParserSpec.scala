@@ -244,7 +244,6 @@ class ExprParserSpec extends AnyFlatSpec {
   "Full query2" should "return proper type" in {
     val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/lit-search-2.sparql"),
       ExprParser.parser(_))
-
     val output = TestUtils.readOutputFile("/queries/output/lit-search-2-output.txt")
     assert(output == p.get.value.toString)
   }

@@ -51,6 +51,8 @@ object Engine {
         StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
       case OpNilF() =>
         StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
+      case TabUnitF() =>
+        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
       case ProjectF(vars, r) =>
         r.select(vars: _*).pure[M]
     }
