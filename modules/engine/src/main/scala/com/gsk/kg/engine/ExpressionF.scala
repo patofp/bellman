@@ -1,7 +1,6 @@
 package com.gsk.kg.engine
 
-import cats.instances.list._
-import cats.syntax.option._
+import cats.implicits._
 
 import higherkindness.droste._
 import higherkindness.droste.syntax.all._
@@ -12,6 +11,7 @@ import com.gsk.kg.sparqlparser.FilterFunction
 import com.gsk.kg.sparqlparser.StringFunc
 import com.gsk.kg.sparqlparser.StringVal
 import com.gsk.kg.sparqlparser.StringLike
+import org.apache.spark.sql.Column
 
 /**
   * [[ExpressionF]] is a pattern functor for the recursive
@@ -118,5 +118,19 @@ object ExpressionF {
     t.collect[List[String], String] {
       case StringVal.STRING(s) => s
     }.headOption
+
+  def fromStringFunc[T](t: T)(implicit T: Basis[ExpressionF, T]): Column => Column = col => {
+    val x: List[Column] = t.foldMap {
+      case StringFunc.URI(s) => List(col)
+      case StringFunc.CONCAT(appendTo, append) => List(col)
+      case StringFunc.STR(s) => List(col)
+      case StringFunc.STRAFTER(s, StringVal.STRING(separator)) => List(Func.strafter(col, separator))
+      case StringFunc.ISBLANK(s) => List(col)
+      case StringFunc.REPLACE(st, pattern, by) => List(col)
+    }
+
+    ???
+  }
+
 
 }
