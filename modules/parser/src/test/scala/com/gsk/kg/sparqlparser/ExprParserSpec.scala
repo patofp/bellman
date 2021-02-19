@@ -224,6 +224,7 @@ class ExprParserSpec extends AnyFlatSpec {
       case _ => fail
     }
   }
+
   /*Below are where assertions are beginning to get complex. The assumption is that previous tests appropriately exercise the parser
   combinator functions. Reading expected results from file instead of explicitly defining inline.
    */
@@ -276,6 +277,12 @@ class ExprParserSpec extends AnyFlatSpec {
     val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/lit-search-xlarge.sparql"),
       ExprParser.parser(_))
     val output = TestUtils.readOutputFile("/queries/output/lit-search-xlarge-output.txt")
+    assert(output == p.get.value.toString)
+  }
+
+  "Document query" should "return the proper type" in {
+    val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/q20-document.sparql"), ExprParser.parser(_))
+    val output = TestUtils.readOutputFile("/queries/output/q20-document-output.txt")
     assert(output == p.get.value.toString)
   }
 }
