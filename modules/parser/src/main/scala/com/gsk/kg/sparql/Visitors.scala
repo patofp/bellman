@@ -11,7 +11,7 @@ trait Visitor[T] {
 
   def visitLeftJoin(left: T, right: T): T
 
-  def visitFilteredLeftJoinVisitor(left: T, right: T, f: Expression): T
+  def visitFilteredLeftJoinVisitor(left: T, right: T, f: Seq[Expression]): T
 
   def visitUnion(left: T, right: T): T
 

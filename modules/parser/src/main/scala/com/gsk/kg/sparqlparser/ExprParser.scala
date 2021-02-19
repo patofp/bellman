@@ -1,6 +1,7 @@
 package com.gsk.kg.sparqlparser
 
 import com.gsk.kg.sparqlparser.Expr._
+import com.gsk.kg.sparqlparser.ParserError.UnExpectedType
 import fastparse.MultiLineWhitespace._
 import fastparse._
 
@@ -43,8 +44,18 @@ object ExprParser {
 
   def bgpParen[_:P]:P[BGP] = P("(" ~ bgp ~ triple.rep(1) ~ ")").map(BGP(_))
 
+  def exprFunc[_:P]:P[Expression] = FilterFunctionParser.parser | StringFuncParser.parser
+
   def filterExprList[_:P]:P[Seq[Expression]] =
-    P("(" ~ exprList ~ (FilterFunctionParser.parser | StringFuncParser.parser).rep(2) ~ ")")
+    P("(" ~ exprList ~ (exprFunc).rep(2) ~ ")")
+
+  def exprFuncList[_:P]:P[Seq[Expression]] = (filterExprList | exprFunc).map { p =>
+    p match {
+      case e: Seq[_] => e.asInstanceOf[Seq[Expression]]
+      case e: Expression => Seq(e)
+      case _ => throw UnExpectedType(s"${p} does not match any sparql expression type.")
+    }
+  }
 
   def filterListParen[_:P]:P[Filter] =
     P("(" ~ filter ~ filterExprList ~ graphPattern ~ ")").map {
@@ -52,7 +63,7 @@ object ExprParser {
     }
 
   def filterSingleParen[_:P]:P[Filter] =
-    P("(" ~ filter ~ (FilterFunctionParser.parser | StringFuncParser.parser) ~ graphPattern ~ ")").map {
+    P("(" ~ filter ~ (exprFunc) ~ graphPattern ~ ")").map {
       p => Filter(List(p._1), p._2)
     }
 
@@ -60,7 +71,7 @@ object ExprParser {
     lj => LeftJoin(lj._1, lj._2)
   }
 
-  def filteredLeftJoinParen[_:P]:P[FilteredLeftJoin] = P("(" ~ leftJoin ~ graphPattern ~ graphPattern ~ FilterFunctionParser.parser ~ ")").map{
+  def filteredLeftJoinParen[_:P]:P[FilteredLeftJoin] = P("(" ~ leftJoin ~ graphPattern ~ graphPattern ~ exprFuncList ~ ")").map{
     lj => FilteredLeftJoin(lj._1, lj._2, lj._3)
   }
 
@@ -70,7 +81,7 @@ object ExprParser {
 
   def extendParen[_:P]:P[Extend] = P("(" ~
     extend ~ "((" ~ (StringValParser.variable) ~
-    (StringValParser.tripleValParser | StringFuncParser.parser | FilterFunctionParser.parser) ~ "))" ~
+    (StringValParser.tripleValParser | exprFunc) ~ "))" ~
     graphPattern ~ ")").map{
     ext => Extend(ext._1, ext._2, ext._3)
   }
