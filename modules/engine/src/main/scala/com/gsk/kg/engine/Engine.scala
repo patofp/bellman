@@ -19,6 +19,8 @@ import cats.Foldable
 import com.gsk.kg.engine.Predicate.None
 import com.gsk.kg.sparqlparser.Query
 import com.gsk.kg.sparqlparser.Query.Construct
+import com.gsk.kg.sparqlparser.StringFunc._
+import com.gsk.kg.sparqlparser.StringVal._
 
 object Engine {
 
@@ -38,7 +40,19 @@ object Engine {
       case UnionF(l, r) =>
         l.union(r).pure[M]
       case ExtendF(bindTo, bindFrom, r) =>
-        StateT.liftF[Result, DataFrame, Multiset](EngineError.General("ExtendF not implemented").asLeft[Multiset])
+        val bf = ExpressionF.getVariable(bindFrom)
+        val separator = ExpressionF.getString(bindFrom)
+
+        val either = for {
+          columnName <- bf.toRight(EngineError.General("unable to find column in STRAFTER"))
+          sep <- separator.toRight(EngineError.General("unable to find separator in STRAFTER"))
+          column = r.dataframe(columnName)
+        } yield r.applyFunc(
+          bindTo,
+          column,
+          col => Func.strafter(col, sep)
+        )
+        StateT.liftF[Result, DataFrame, Multiset](either)
       case FilterF(funcs, expr) =>
         StateT.liftF[Result, DataFrame, Multiset](EngineError.General("FilterF not implemented").asLeft[Multiset])
       case JoinF(l, r) =>

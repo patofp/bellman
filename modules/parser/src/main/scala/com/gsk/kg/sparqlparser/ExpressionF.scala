@@ -13,7 +13,6 @@ import com.gsk.kg.sparqlparser.StringFunc
 import com.gsk.kg.sparqlparser.StringVal
 import com.gsk.kg.sparqlparser.StringLike
 
-
 /**
   * [[ExpressionF]] is a pattern functor for the recursive
   * [[Expression]].
