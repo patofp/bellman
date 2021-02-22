@@ -45,20 +45,6 @@ class FuncSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     import sqlContext.implicits._
 
     val df = List(
-      "<http://google.com>",
-      "<http://other.com>"
-    ).toDF("text")
-
-    df.select(Func.iri(df("text")).as("result")).collect shouldEqual Array(
-      Row("<http://google.com>"),
-      Row("<http://other.com>")
-    )
-  }
-
-  it should "wrap string URIs in angle brackets" in {
-    import sqlContext.implicits._
-
-    val df = List(
       "http://google.com",
       "http://other.com"
     ).toDF("text")

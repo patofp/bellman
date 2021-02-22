@@ -6,9 +6,10 @@ import org.apache.spark.sql._
 import org.apache.spark.sql.functions.{concat => cc, _}
 import com.gsk.kg.sparqlparser.StringFunc
 import com.gsk.kg.sparqlparser.StringFunc._
-import com.gsk.kg.engine.ExpressionF.STRING
 import com.gsk.kg.sparqlparser.StringVal
 import com.gsk.kg.sparqlparser.Expression
+import com.gsk.kg.sparqlparser.StringVal.VARIABLE
+import com.gsk.kg.sparqlparser.StringVal.STRING
 
 object Func {
 
@@ -62,16 +63,14 @@ object Func {
     * | IRI("http://example/") | <http://example/> |
     * | IRI(<http://example/>) | <http://example/> |
     *
+    * TODO(pepegar): We need to check if it's feasible to validate
+    * that values in the columns are URI formatted.
+    *
     * @param col
     * @return
     */
   def iri(col: Column): Column =
-    when(
-      col.startsWith("<").and(col.endsWith(">")),
-      col
-    ).otherwise(
-      format_string("<%s>", col)
-    )
+    col
 
   /**
     * synonym for [[Func.iri]]
@@ -90,7 +89,6 @@ object Func {
     */
   def concat(a: Column, b: Column): Column =
     cc(a, b)
-
 
   /**
     * Concatenate a [[String]] with a [[Column]], generating a new [[Column]]
@@ -111,27 +109,5 @@ object Func {
     */
   def concat(a: Column, b: String): Column =
     concat(a, lit(b))
-
-  /**
-    * Obtain the function application given the underlying
-    * [[StringFunc]].
-    *
-    * @param sf
-    * @return
-    */
-  def fromStringFunc(sf: Expression): Either[EngineError, Column => Column] =
-    sf match {
-      case URI(s) =>
-        (col => iri(col)).asRight
-      case CONCAT(appendTo, append) => ???
-        //(col => Func.concat())
-      case STR(s)                   => EngineError.General("STR not implemented").asLeft
-      case STRAFTER(s, StringVal.STRING(x)) =>
-        (col => strafter(col, x)).asRight
-      case STRAFTER(s, f)           => EngineError.General("STRAFTER not implemented").asLeft
-      case ISBLANK(s)               => EngineError.General("ISBLANK not implemented").asLeft
-      case REPLACE(st, pattern, by) => EngineError.General("REPLACE not implemented").asLeft
-      case f                        => EngineError.UnknownFunction(f.toString()).asLeft
-    }
 
 }
