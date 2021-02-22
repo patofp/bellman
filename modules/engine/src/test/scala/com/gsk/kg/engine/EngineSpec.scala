@@ -28,13 +28,13 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
   val dfList = List(
     (
       "test",
-      "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
-      "<http://id.gsk.com/dm/1.0/Document>"
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+      "http://id.gsk.com/dm/1.0/Document"
     ),
-    ("test", "<http://id.gsk.com/dm/1.0/docSource>", "source")
+    ("test", "http://id.gsk.com/dm/1.0/docSource", "source")
   )
 
-  "Engine" should "perform query operations ignore the dataframe" ignore {
+  "Engine" should "perform query operations in the dataframe" in {
     import sqlContext.implicits._
 
     val df = dfList.toDF("s", "p", "o")
@@ -49,7 +49,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     Engine.evaluate(df, query).right.get.collect() shouldEqual df.collect()
   }
 
-  it should "execute a query with two dependent BGPs" ignore {
+  it should "execute a query with two dependent BGPs" in {
     import sqlContext.implicits._
 
     val df: DataFrame = dfList.toDF("s", "p", "o")
@@ -68,7 +68,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     )
   }
 
-  it should "execute a UNION query BGPs with the same bindings" ignore {
+  it should "execute a UNION query BGPs with the same bindings" in {
     import sqlContext.implicits._
 
     val df: DataFrame = (("does", "not", "match") :: dfList).toDF("s", "p", "o")
@@ -84,12 +84,12 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
       """
 
     Engine.evaluate(df, query).right.get.collect() shouldEqual Array(
-      Row("test", "<http://id.gsk.com/dm/1.0/Document>"),
+      Row("test", "http://id.gsk.com/dm/1.0/Document"),
       Row("test", "source")
     )
   }
 
-  it should "execute a UNION query BGPs with different bindings" ignore {
+  it should "execute a UNION query BGPs with different bindings" in {
     import sqlContext.implicits._
 
     val df: DataFrame = (("does", "not", "match") :: dfList).toDF("s", "p", "o")
@@ -105,12 +105,12 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
       """
 
     Engine.evaluate(df, query).right.get.collect() shouldEqual Array(
-      Row("test", "<http://id.gsk.com/dm/1.0/Document>", null, null),
+      Row("test", "http://id.gsk.com/dm/1.0/Document", null, null),
       Row(null, null, "test", "source")
     )
   }
 
-  it should "execute a CONSTRUCT with a single triple pattern" ignore {
+  it should "execute a CONSTRUCT with a single triple pattern" in {
     import sqlContext.implicits._
 
     val df: DataFrame = dfList.toDF("s", "p", "o")
@@ -126,18 +126,18 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     Engine.evaluate(df, query).right.get.collect() shouldEqual Array(
       Row(
         "test",
-        "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
-        "<http://id.gsk.com/dm/1.0/Document>"
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "http://id.gsk.com/dm/1.0/Document"
       )
     )
   }
 
-  it should "execute a CONSTRUCT with more than one triple pattern" ignore {
+  it should "execute a CONSTRUCT with more than one triple pattern" in {
     import sqlContext.implicits._
 
     val positive = List(
-        ("doesmatch", "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://id.gsk.com/dm/1.0/Document>"),
-        ("doesmatchaswell", "<http://id.gsk.com/dm/1.0/docSource>", "potato")
+        ("doesmatch", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://id.gsk.com/dm/1.0/Document"),
+        ("doesmatchaswell", "http://id.gsk.com/dm/1.0/docSource", "potato")
       )
     val df: DataFrame = (positive ++ dfList).toDF("s", "p", "o")
 
@@ -154,34 +154,34 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     Engine.evaluate(df, query).right.get.collect().toSet shouldEqual Set(
       Row(
         "doesmatch",
-        "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
-        "<http://id.gsk.com/dm/1.0/Document>"
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "http://id.gsk.com/dm/1.0/Document"
       ),
       Row(
         "doesmatchaswell",
-        "<http://id.gsk.com/dm/1.0/docSource>",
+        "http://id.gsk.com/dm/1.0/docSource",
         "potato"
       ),
       Row(
         "test",
-        "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
-        "<http://id.gsk.com/dm/1.0/Document>"
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "http://id.gsk.com/dm/1.0/Document"
       ),
       Row(
         "test",
-        "<http://id.gsk.com/dm/1.0/docSource>",
+        "http://id.gsk.com/dm/1.0/docSource",
         "source"
       )
     )
   }
 
 
-  it should "execute a CONSTRUCT with more than one triple pattern with common bindings" ignore {
+  it should "execute a CONSTRUCT with more than one triple pattern with common bindings" in {
     import sqlContext.implicits._
 
     val negative = List(
-        ("doesntmatch", "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://id.gsk.com/dm/1.0/Document>"),
-        ("doesntmatcheither", "<http://id.gsk.com/dm/1.0/docSource>", "potato")
+        ("doesntmatch", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://id.gsk.com/dm/1.0/Document"),
+        ("doesntmatcheither", "http://id.gsk.com/dm/1.0/docSource", "potato")
       )
 
     val df: DataFrame = (negative ++ dfList).toDF("s", "p", "o")
@@ -202,19 +202,19 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     Engine.evaluate(df, query).right.get.collect().toSet shouldEqual Set(
       Row(
         "test",
-        "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
-        "<http://id.gsk.com/dm/1.0/Document>"
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "http://id.gsk.com/dm/1.0/Document"
       ),
       Row(
         "test",
-        "<http://id.gsk.com/dm/1.0/docSource>",
+        "http://id.gsk.com/dm/1.0/docSource",
         "source"
       )
     )
 
   }
 
-  it should "query a real DF with a real query" in {
+  it should "query a real DF with a real query" ignore {
     val query = sparql"""
       PREFIX  schema: <http://schema.org/>
       PREFIX  rdf:  <http://www.w3.org/2000/01/rdf-schema#>
@@ -238,8 +238,6 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
       """
 
     val inputDF = readNTtoDF("fixtures/reference-q1-input.nt")
-
-    inputDF.show(10)
 
     val outputDF = readNTtoDF("fixtures/reference-q1-output.nt")
 
