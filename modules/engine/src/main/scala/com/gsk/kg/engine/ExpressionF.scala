@@ -1,10 +1,13 @@
 package com.gsk.kg.engine
 
+import cats.data.State
 import cats.implicits._
 
 import higherkindness.droste._
 import higherkindness.droste.syntax.all._
 import higherkindness.droste.macros.deriveTraverse
+
+import org.apache.spark.sql.functions._
 
 import com.gsk.kg.sparqlparser.Expression
 import com.gsk.kg.sparqlparser.FilterFunction
@@ -12,6 +15,7 @@ import com.gsk.kg.sparqlparser.StringFunc
 import com.gsk.kg.sparqlparser.StringVal
 import com.gsk.kg.sparqlparser.StringLike
 import org.apache.spark.sql.Column
+import com.gsk.kg.engine.ExpressionF._
 
 /**
   * [[ExpressionF]] is a pattern functor for the recursive
@@ -35,7 +39,7 @@ object ExpressionF {
   final case class URI[A](s: A) extends ExpressionF[A]
   final case class CONCAT[A](appendTo: A, append: A) extends ExpressionF[A]
   final case class STR[A](s: A) extends ExpressionF[A]
-  final case class STRAFTER[A](s: A, f: A) extends ExpressionF[A]
+  final case class STRAFTER[A](s: A, f: String) extends ExpressionF[A]
   final case class ISBLANK[A](s: A) extends ExpressionF[A]
   final case class REPLACE[A](st: A, pattern: A, by: A) extends ExpressionF[A]
   final case class STRING[A](s: String) extends ExpressionF[A]
@@ -57,7 +61,7 @@ object ExpressionF {
       case StringFunc.URI(s)                   => URI(s)
       case StringFunc.CONCAT(appendTo, append) => CONCAT(appendTo, append)
       case StringFunc.STR(s)                   => STR(s)
-      case StringFunc.STRAFTER(s, f)           => STRAFTER(s, f)
+      case StringFunc.STRAFTER(s, StringVal.STRING(f))           => STRAFTER(s, f)
       case StringFunc.ISBLANK(s)               => ISBLANK(s)
       case StringFunc.REPLACE(st, pattern, by) => REPLACE(st, pattern, by)
       case StringVal.STRING(s)                 => STRING(s)
@@ -118,5 +122,35 @@ object ExpressionF {
     t.collect[List[String], String] {
       case StringVal.STRING(s) => s
     }.headOption
+
+  def compile[T](t: T)(implicit T: Basis[ExpressionF, T]): Multiset => Column = ms => {
+    val algebraM: AlgebraM[State[Multiset, *], ExpressionF, Column] = AlgebraM.apply[State[Multiset, *], ExpressionF, Column] {
+      case EQUALS(l, r)    => ???
+      case REGEX(l, r)     => ???
+      case STRSTARTS(l, r) => ???
+      case GT(l, r)        => ???
+      case LT(l, r)        => ???
+      case OR(l, r)        => ???
+      case AND(l, r)       => ???
+      case NEGATE(s)       => ???
+
+      case URI(s)                   => Func.iri(s).pure[State[Multiset, *]]
+      case CONCAT(appendTo, append) => Func.concat(appendTo, append).pure[State[Multiset, *]]
+      case STR(s)                   => s.pure[State[Multiset, *]]
+      case STRAFTER(s, f)           => Func.strafter(s, f).pure[State[Multiset, *]]
+      case ISBLANK(s)               => ???
+      case REPLACE(st, pattern, by) => ???
+
+      case STRING(s)   => lit(s).pure[State[Multiset, *]]
+      case NUM(s)      => lit(s).pure[State[Multiset, *]]
+      case VARIABLE(s) => State.inspect[Multiset, Column](multiset => multiset.dataframe(s))
+      case URIVAL(s)   => lit(s).pure[State[Multiset, *]]
+      case BLANK(s)    => lit(s).pure[State[Multiset, *]]
+    }
+
+    val eval = scheme.cataM[State[Multiset, *], ExpressionF, T, Column](algebraM)
+
+    eval(t).runA(ms).value
+  }
 
 }
