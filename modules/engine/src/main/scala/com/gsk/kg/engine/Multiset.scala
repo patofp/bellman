@@ -115,24 +115,21 @@ final case class Multiset(
     }
 
   /**
-    * Apply a function [[fn]] to the underlying [[DataFrame]],
-    * creating a new column with the result (and a new [[binding]] to
-    * it as well)
+    * Add a new column to the multiset, with the given binding
     *
     * @param binding
     * @param col
     * @param fn
     * @return
     */
-  def applyFunc(
+  def withColumn(
     binding: VARIABLE,
-    col: Column,
-    fn: Column => Column
+    column: Column
   ): Multiset =
     Multiset(
       bindings + binding,
       dataframe
-        .withColumn(binding.s, fn(col))
+        .withColumn(binding.s, column)
     )
 
 }

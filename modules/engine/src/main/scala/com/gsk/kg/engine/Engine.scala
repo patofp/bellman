@@ -102,19 +102,9 @@ object Engine {
       bindFrom: Expression,
       r: Multiset
   ) = {
-    val bf = ExpressionF.getVariable(bindFrom)
-    val separator = ExpressionF.getString(bindFrom)
-    val either = for {
-      columnName <-
-        bf.toRight(EngineError.General("unable to find column"))
-      column = r.dataframe(columnName)
-      fn <- Func.fromStringFunc(bindFrom)
-    } yield r.applyFunc(
-      bindTo,
-      column,
-      fn
-    )
-    StateT.liftF[Result, DataFrame, Multiset](either)
+    val getColumn = ExpressionF.compile(bindFrom)
+
+    r.withColumn(bindTo, getColumn(r)).pure[M]
   }
 
   private def evaluateBGPF(
