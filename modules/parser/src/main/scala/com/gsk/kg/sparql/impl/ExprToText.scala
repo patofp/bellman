@@ -15,7 +15,7 @@ object ExprToText {
             case STRING(s) => "\"" + s + "\""
             case NUM(s) => s
             case VARIABLE(s) => s
-            case URIVAL(s) => s
+            case URIVAL(s) => "<" + s + ">"
             case BLANK(s) => s
           }
         case sf: StringFunc =>
