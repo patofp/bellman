@@ -246,7 +246,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
     val outputDF = readNTtoDF("fixtures/reference-q1-output.nt")
 
-    Engine.evaluatef(inputDF, query) shouldBe a[Right[_, _]]
+    Engine.evaluate(inputDF, query) shouldBe a[Right[_, _]]
     Engine.evaluate(inputDF, query).right.get.collect.toSet shouldEqual outputDF.collect().toSet
   }
 
