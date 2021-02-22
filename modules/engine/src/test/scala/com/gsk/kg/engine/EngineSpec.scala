@@ -214,6 +214,11 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
   }
 
+
+  /**
+    * TODO(pepegar): In order to make this test pass we need the
+    * results to be RDF compliant (mainly, wrapping values correctly)
+    */
   it should "query a real DF with a real query" ignore {
     val query = sparql"""
       PREFIX  schema: <http://schema.org/>
@@ -241,9 +246,8 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
     val outputDF = readNTtoDF("fixtures/reference-q1-output.nt")
 
-    Engine.evaluate(inputDF, query) shouldBe a[Right[_, _]]
-    Engine.evaluate(inputDF, query).right.get.collect shouldEqual outputDF.collect()
-
+    Engine.evaluatef(inputDF, query) shouldBe a[Right[_, _]]
+    Engine.evaluate(inputDF, query).right.get.collect.toSet shouldEqual outputDF.collect().toSet
   }
 
   private def readNTtoDF(path: String) = {
