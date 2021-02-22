@@ -32,54 +32,22 @@ object Engine {
   def evaluateAlgebraM(implicit sc: SQLContext): AlgebraM[M, ExprF, Multiset] =
     AlgebraM[M, ExprF, Multiset] {
       case BGPF(triples) => evaluateBGPF(triples)
-      case TripleF(s, p, o) =>
-        StateT.liftF[Result, DataFrame, Multiset](
-          EngineError.General("TripleF not implemented").asLeft[Multiset]
-        )
-      case LeftJoinF(l, r) =>
-        StateT.liftF[Result, DataFrame, Multiset](
-          EngineError.General("LeftJoinF not implemented").asLeft[Multiset]
-        )
-      case FilteredLeftJoinF(l, r, f) =>
-        StateT.liftF[Result, DataFrame, Multiset](
-          EngineError
-            .General("FilteredLeftJoinF not implemented")
-            .asLeft[Multiset]
-        )
+      case TripleF(s, p, o) => notImplemented("TripleF")
+      case LeftJoinF(l, r) => notImplemented("LeftJoinF")
+      case FilteredLeftJoinF(l, r, f) => notImplemented("FilteredLeftJoinF")
       case UnionF(l, r) =>
         l.union(r).pure[M]
       case ExtendF(bindTo, bindFrom, r) =>
         evaluateExtendF(bindTo, bindFrom, r)
-      case FilterF(funcs, expr) =>
-        StateT.liftF[Result, DataFrame, Multiset](
-          EngineError.General("FilterF not implemented").asLeft[Multiset]
-        )
-      case JoinF(l, r) =>
-        StateT.liftF[Result, DataFrame, Multiset](
-          EngineError.General("JoinF not implemented").asLeft[Multiset]
-        )
-      case GraphF(g, e) =>
-        StateT.liftF[Result, DataFrame, Multiset](
-          EngineError.General("GraphF not implemented").asLeft[Multiset]
-        )
-      case DistinctF(r) =>
-        StateT.liftF[Result, DataFrame, Multiset](
-          EngineError.General("DistinctF not implemented").asLeft[Multiset]
-        )
-      case OffsetLimitF(offset, limit, r) =>
-        StateT.liftF[Result, DataFrame, Multiset](
-          EngineError.General("OffsetLimitF not implemented").asLeft[Multiset]
-        )
-      case OpNilF() =>
-        StateT.liftF[Result, DataFrame, Multiset](
-          EngineError.General("OpNilF not implemented").asLeft[Multiset]
-        )
+      case FilterF(funcs, expr) => notImplemented("FilterF")
+      case JoinF(l, r) => notImplemented("JoinF")
+      case GraphF(g, e) => notImplemented("GraphF")
+      case DistinctF(r) => notImplemented("DistinctF")
+      case OffsetLimitF(offset, limit, r) => notImplemented("OffsetLimitF")
+      case OpNilF() => notImplemented("OpNilF")
       case ProjectF(vars, r) =>
         r.select(vars: _*).pure[M]
-      case TabUnitF() =>
-        StateT.liftF[Result, DataFrame, Multiset](
-          EngineError.General("TabUnitF not implemented").asLeft[Multiset]
-        )
+      case TabUnitF() => notImplemented("TabUnitF")
     }
 
   def evaluate(
@@ -152,5 +120,10 @@ object Engine {
       case Predicate.None =>
         df
     }
+
+  private def notImplemented(constructor: String): M[Multiset] =
+    StateT.liftF[Result, DataFrame, Multiset](
+      EngineError.General(s"$constructor not implemented").asLeft[Multiset]
+    )
 
 }
