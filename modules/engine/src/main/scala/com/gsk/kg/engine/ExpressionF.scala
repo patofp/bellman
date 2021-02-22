@@ -119,18 +119,4 @@ object ExpressionF {
       case StringVal.STRING(s) => s
     }.headOption
 
-  def fromStringFunc[T](t: T)(implicit T: Basis[ExpressionF, T]): Column => Column = col => {
-    val x: List[Column] = t.foldMap {
-      case StringFunc.URI(s) => List(col)
-      case StringFunc.CONCAT(appendTo, append) => List(col)
-      case StringFunc.STR(s) => List(col)
-      case StringFunc.STRAFTER(s, StringVal.STRING(separator)) => List(Func.strafter(col, separator))
-      case StringFunc.ISBLANK(s) => List(col)
-      case StringFunc.REPLACE(st, pattern, by) => List(col)
-    }
-
-    ???
-  }
-
-
 }

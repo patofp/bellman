@@ -6,9 +6,11 @@ import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 import com.gsk.kg.sparqlparser.StringFunc
 import com.gsk.kg.sparqlparser.StringFunc._
+import com.gsk.kg.engine.ExpressionF.STRING
+import com.gsk.kg.sparqlparser.StringVal
+import com.gsk.kg.sparqlparser.Expression
 
 object Func {
-
 
   /**
     * Implementation of SparQL STRAFTER on Spark dataframes.
@@ -71,7 +73,6 @@ object Func {
       format_string("<%s>", col)
     )
 
-
   /**
     * synonym for [[Func.iri]]
     *
@@ -80,6 +81,18 @@ object Func {
     */
   def uri(col: Column): Column = iri(col)
 
-
+  def fromStringFunc(sf: Expression): Either[EngineError, Column => Column] =
+    sf match {
+      case URI(s) =>
+        (col => iri(col)).asRight
+      case CONCAT(appendTo, append) => EngineError.General("CONCAT not implemented").asLeft
+      case STR(s)                   => EngineError.General("STR not implemented").asLeft
+      case STRAFTER(s, StringVal.STRING(x)) =>
+        (col => strafter(col, x)).asRight
+      case STRAFTER(s, f)           => EngineError.General("STRAFTER not implemented").asLeft
+      case ISBLANK(s)               => EngineError.General("ISBLANK not implemented").asLeft
+      case REPLACE(st, pattern, by) => EngineError.General("REPLACE not implemented").asLeft
+      case f                        => EngineError.UnknownFunction(f.toString()).asLeft
+    }
 
 }

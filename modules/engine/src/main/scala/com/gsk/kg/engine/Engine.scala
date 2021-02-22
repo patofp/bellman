@@ -106,15 +106,13 @@ object Engine {
     val separator = ExpressionF.getString(bindFrom)
     val either = for {
       columnName <-
-        bf.toRight(EngineError.General("unable to find column in STRAFTER"))
-      sep <- separator.toRight(
-        EngineError.General("unable to find separator in STRAFTER")
-      )
+        bf.toRight(EngineError.General("unable to find column"))
       column = r.dataframe(columnName)
+      fn <- Func.fromStringFunc(bindFrom)
     } yield r.applyFunc(
       bindTo,
       column,
-      col => Func.strafter(col, sep)
+      fn
     )
     StateT.liftF[Result, DataFrame, Multiset](either)
   }

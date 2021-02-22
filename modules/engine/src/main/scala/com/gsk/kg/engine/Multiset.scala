@@ -114,6 +114,16 @@ final case class Multiset(
         )
     }
 
+  /**
+    * Apply a function [[fn]] to the underlying [[DataFrame]],
+    * creating a new column with the result (and a new [[binding]] to
+    * it as well)
+    *
+    * @param binding
+    * @param col
+    * @param fn
+    * @return
+    */
   def applyFunc(
     binding: VARIABLE,
     col: Column,
