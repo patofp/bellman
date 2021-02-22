@@ -50,8 +50,8 @@ class FuncSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     ).toDF("text")
 
     df.select(Func.iri(df("text")).as("result")).collect shouldEqual Array(
-      Row("<http://google.com>"),
-      Row("<http://other.com>")
+      Row("http://google.com"),
+      Row("http://other.com")
     )
   }
 
