@@ -68,4 +68,49 @@ class FuncSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
       Row("<http://other.com>")
     )
   }
+
+  "Func.concat" should "concatenate two string columns" in {
+    import sqlContext.implicits._
+
+    val df = List(
+      ("Hello", " Dolly"),
+      ("Here's a song", " Dolly")
+    ).toDF("a", "b")
+
+    df.select(Func.concat(df("a"), df("b")).as("verses"))
+      .collect shouldEqual Array(
+      Row("Hello Dolly"),
+      Row("Here's a song Dolly")
+    )
+  }
+
+  it should "concatenate a column with a literal string" in {
+    import sqlContext.implicits._
+
+    val df = List(
+      ("Hello", " Dolly"),
+      ("Here's a song", " Dolly")
+    ).toDF("a", "b")
+
+    df.select(Func.concat(df("a"), " world!").as("sentences"))
+      .collect shouldEqual Array(
+      Row("Hello world!"),
+      Row("Here's a song world!")
+    )
+  }
+
+  it should "concatenate a literal string with a column" in {
+    import sqlContext.implicits._
+
+    val df = List(
+      ("Hello", " Dolly"),
+      ("Here's a song", " Dolly")
+    ).toDF("a", "b")
+
+    df.select(Func.concat("Ciao", df("b")).as("verses"))
+      .collect shouldEqual Array(
+      Row("Ciao Dolly"),
+      Row("Ciao Dolly")
+    )
+  }
 }

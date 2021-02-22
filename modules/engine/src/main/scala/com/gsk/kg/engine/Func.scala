@@ -3,7 +3,7 @@ package com.gsk.kg.engine
 import cats.syntax.either._
 
 import org.apache.spark.sql._
-import org.apache.spark.sql.functions._
+import org.apache.spark.sql.functions.{concat => cc, _}
 import com.gsk.kg.sparqlparser.StringFunc
 import com.gsk.kg.sparqlparser.StringFunc._
 import com.gsk.kg.engine.ExpressionF.STRING
@@ -81,11 +81,50 @@ object Func {
     */
   def uri(col: Column): Column = iri(col)
 
+  /**
+    * Concatenate two [[Column]] into a new one
+    *
+    * @param a
+    * @param b
+    * @return
+    */
+  def concat(a: Column, b: Column): Column =
+    cc(a, b)
+
+
+  /**
+    * Concatenate a [[String]] with a [[Column]], generating a new [[Column]]
+    *
+    * @param a
+    * @param b
+    * @return
+    */
+  def concat(a: String, b: Column): Column =
+    concat(lit(a), b)
+
+  /**
+    * Concatenate a [[Column]] with a [[String]], generating a new [[Column]]
+    *
+    * @param a
+    * @param b
+    * @return
+    */
+  def concat(a: Column, b: String): Column =
+    concat(a, lit(b))
+
+  /**
+    * Obtain the function application given the underlying
+    * [[StringFunc]].
+    *
+    * @param sf
+    * @return
+    */
   def fromStringFunc(sf: Expression): Either[EngineError, Column => Column] =
     sf match {
       case URI(s) =>
         (col => iri(col)).asRight
-      case CONCAT(appendTo, append) => EngineError.General("CONCAT not implemented").asLeft
+      case CONCAT(appendTo, append) => ???
+        //(col => Func.concat())
       case STR(s)                   => EngineError.General("STR not implemented").asLeft
       case STRAFTER(s, StringVal.STRING(x)) =>
         (col => strafter(col, x)).asRight
