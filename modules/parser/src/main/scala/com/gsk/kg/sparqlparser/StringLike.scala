@@ -6,7 +6,7 @@ sealed trait StringFunc extends StringLike
 sealed trait StringVal extends StringLike {
   val s: String
   def isVariable: Boolean = this match {
-    case StringVal.STRING(s) => false
+    case StringVal.STRING(s,_) => false
     case StringVal.NUM(s) => false
     case StringVal.VARIABLE(s) => true
     case StringVal.URIVAL(s) => false
@@ -24,9 +24,10 @@ object StringFunc {
 }
 
 object StringVal {
-  final case class STRING(s:String) extends StringVal
+  final case class STRING(s:String, tag: Option[String] = None) extends StringVal
   final case class NUM(s:String) extends StringVal
   final case class VARIABLE(s:String) extends StringVal
   final case class URIVAL(s:String) extends StringVal
   final case class BLANK(s:String) extends StringVal
+  final case class BOOL(s:String) extends StringVal
 }

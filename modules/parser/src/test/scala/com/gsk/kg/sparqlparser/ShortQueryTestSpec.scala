@@ -42,4 +42,22 @@ class ShortQueryTestSpec extends AnyFlatSpec {
       case _ => fail
     }
   }
+
+  "test literal" should "work" in {
+    val q =
+      """
+        PREFIX  xsd:  <http://www.w3.org/2001/XMLSchema#>
+        PREFIX  lita:  <http://lit-search-api/attribute/>
+
+        SELECT ?doc WHERE {
+          ?s ?p true .
+          "0.3"^^xsd:decimal ?p ?o .
+          ?doc lita:indexEnd "-1234"^^xsd:integer .
+          ?doc lita:contextText "xyz"@en .
+          ?doc lita:contextText "cde" .
+        }
+      """
+    val query = QueryConstruct.parse(q)
+    println(query.r)
+  }
 }

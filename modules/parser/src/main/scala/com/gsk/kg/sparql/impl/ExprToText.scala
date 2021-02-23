@@ -12,7 +12,7 @@ object ExprToText {
       st match {
         case sv: StringVal =>
           sv match {
-            case STRING(s) => "\"" + s + "\""
+            case STRING(s,_) => "\"" + s + "\""
             case NUM(s) => s
             case VARIABLE(s) => s
             case URIVAL(s) => s

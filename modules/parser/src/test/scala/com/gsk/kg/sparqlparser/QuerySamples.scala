@@ -232,33 +232,33 @@ object QuerySamples {
     PREFIX  schema: <http://schema.org/>
     PREFIX  dm:   <http://gsk-kg.rdip.gsk.com/dm/1.0/>
     PREFIX  prism: <http://prismstandard.org/namespaces/basic/2.0/>
-
-    SELECT
-        ?doc ?doi ?src ?year ?month ?title ?te ?text ?objText ?objStartIdx ?objEndIdx ?subjText ?subjStartIdx ?subjEndIdx ?subjconcept
+    SELECT ?objText ?objStartIdx ?objEndIdx ?subjText ?subjStartIdx ?subjEndIdx ?predText ?doc ?doi ?src ?year ?month ?title ?te ?text
     WHERE
     {
-        ?subjle dm:mappedTo ?subjconcept .
-        ?subjde dm:entityLink ?subjle .
-        ?pred dm:hasSubject ?subjde .
-        ?pred dm:hasObject ?objde .
-        ?objde dm:entityLink ?objle .
-        # For example purposes, chose CUI for Aspirin
-        ?objle dm:mappedTo <http://gsk-kg.rdip.gsk.com/umls/CUI=C0002370> .
-        ?subjde dm:indexStart ?subjStartIdx .
-        ?subjde dm:indexEnd ?subjEndIdx .
-        ?subjde dm:text ?subjText .
-        ?objde dm:indexStart ?objStartIdx .
-        ?objde dm:indexStart ?objEndIdx .
-        ?objde dm:text ?objText .
-        ?te dm:contains ?pred .
-        ?te dm:text ?text .
-        ?ds dm:contains ?te .
-        ?doc dm:contains ?ds .
-        ?doc schema:title ?title .
-        ?doc dm:docSource ?src .
-        ?doc prism:doi ?doi .
-        ?doc dm:pubDateYear ?year .
-        ?doc dm:pubDateMonth ?month .
+      ?pred dm:hasSubject ?subjde .
+      ?pred dm:hasObject ?objde .
+      ?pred dm:text ?predTex .
+      ?objde dm:entityLink ?objle .
+      ?subjde dm:entityLink ?subjle .
+      # Chose CUI for MCL1
+      ?objle dm:mappedTo <http://gsk-kg.rdip.gsk.com/umls/CUI=C1366587> .
+      # Chose CUI for HMGCR
+      ?subjle dm:mappedTo <http://gsk-kg.rdip.gsk.com/umls/CUI=C1415615> .
+      ?subjde dm:indexStart ?subjStartIdx .
+      ?subjde dm:indexEnd ?subjEndIdx .
+      ?subjde dm:text ?subjText .
+      ?objde dm:indexStart ?objStartIdx .
+      ?objde dm:indexStart ?objEndIdx .
+      ?objde dm:text ?objText .
+      ?te dm:contains ?pred .
+      ?te dm:text ?text .
+      ?ds dm:contains ?te .
+      ?doc dm:contains ?ds .
+      ?doc schema:title ?title .
+      ?doc dm:docSource ?src .
+      ?doc prism:doi ?doi .
+      ?doc dm:pubDateYear ?year .
+      ?doc dm:pubDateMonth ?month .
     }
     """
 
