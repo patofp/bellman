@@ -75,7 +75,7 @@ object QueryConstruct {
       if (n.isLiteral) {
         STRING(n.toString())
       } else if (n.isURI) {
-        URIVAL(n.toString())
+        URIVAL(s"<${n.toString}>")
       } else if (n.isVariable) {
         VARIABLE(n.toString())
       } else if (n.isBlank) {

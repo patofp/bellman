@@ -28,10 +28,10 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
   val dfList = List(
     (
       "test",
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-      "http://id.gsk.com/dm/1.0/Document"
+      "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+      "<http://id.gsk.com/dm/1.0/Document>"
     ),
-    ("test", "http://id.gsk.com/dm/1.0/docSource", "source")
+    ("test", "<http://id.gsk.com/dm/1.0/docSource>", "source")
   )
 
   "Engine" should "perform query operations in the dataframe" in {
@@ -84,7 +84,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
       """
 
     Engine.evaluate(df, query).right.get.collect() shouldEqual Array(
-      Row("test", "http://id.gsk.com/dm/1.0/Document"),
+      Row("test", "<http://id.gsk.com/dm/1.0/Document>"),
       Row("test", "source")
     )
   }
@@ -105,7 +105,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
       """
 
     Engine.evaluate(df, query).right.get.collect() shouldEqual Array(
-      Row("test", "http://id.gsk.com/dm/1.0/Document", null, null),
+      Row("test", "<http://id.gsk.com/dm/1.0/Document>", null, null),
       Row(null, null, "test", "source")
     )
   }
@@ -126,8 +126,8 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     Engine.evaluate(df, query).right.get.collect() shouldEqual Array(
       Row(
         "test",
-        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-        "http://id.gsk.com/dm/1.0/Document"
+        "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+        "<http://id.gsk.com/dm/1.0/Document>"
       )
     )
   }
@@ -136,8 +136,8 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     import sqlContext.implicits._
 
     val positive = List(
-        ("doesmatch", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://id.gsk.com/dm/1.0/Document"),
-        ("doesmatchaswell", "http://id.gsk.com/dm/1.0/docSource", "potato")
+        ("doesmatch", "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://id.gsk.com/dm/1.0/Document>"),
+        ("doesmatchaswell", "<http://id.gsk.com/dm/1.0/docSource>", "potato")
       )
     val df: DataFrame = (positive ++ dfList).toDF("s", "p", "o")
 
@@ -154,22 +154,22 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     Engine.evaluate(df, query).right.get.collect().toSet shouldEqual Set(
       Row(
         "doesmatch",
-        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-        "http://id.gsk.com/dm/1.0/Document"
+        "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+        "<http://id.gsk.com/dm/1.0/Document>"
       ),
       Row(
         "doesmatchaswell",
-        "http://id.gsk.com/dm/1.0/docSource",
+        "<http://id.gsk.com/dm/1.0/docSource>",
         "potato"
       ),
       Row(
         "test",
-        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-        "http://id.gsk.com/dm/1.0/Document"
+        "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+        "<http://id.gsk.com/dm/1.0/Document>"
       ),
       Row(
         "test",
-        "http://id.gsk.com/dm/1.0/docSource",
+        "<http://id.gsk.com/dm/1.0/docSource>",
         "source"
       )
     )
@@ -180,8 +180,8 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     import sqlContext.implicits._
 
     val negative = List(
-        ("doesntmatch", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://id.gsk.com/dm/1.0/Document"),
-        ("doesntmatcheither", "http://id.gsk.com/dm/1.0/docSource", "potato")
+        ("doesntmatch", "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "http://id.gsk.com/dm/1.0/Document>"),
+        ("doesntmatcheither", "<http://id.gsk.com/dm/1.0/docSource>", "potato")
       )
 
     val df: DataFrame = (negative ++ dfList).toDF("s", "p", "o")
@@ -202,12 +202,12 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     Engine.evaluate(df, query).right.get.collect().toSet shouldEqual Set(
       Row(
         "test",
-        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-        "http://id.gsk.com/dm/1.0/Document"
+        "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+        "<http://id.gsk.com/dm/1.0/Document>"
       ),
       Row(
         "test",
-        "http://id.gsk.com/dm/1.0/docSource",
+        "<http://id.gsk.com/dm/1.0/docSource>",
         "source"
       )
     )
