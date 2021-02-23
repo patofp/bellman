@@ -237,7 +237,7 @@ object QuerySamples {
     {
       ?pred dm:hasSubject ?subjde .
       ?pred dm:hasObject ?objde .
-      ?pred dm:text ?predTex .
+      ?pred dm:text ?predText .
       ?objde dm:entityLink ?objle .
       ?subjde dm:entityLink ?subjle .
       # Chose CUI for MCL1
