@@ -1,5 +1,7 @@
 package com.gsk.kg.engine
 
+import com.gsk.kg.engine._
+
 import cats.data.State
 import cats.implicits._
 
@@ -16,6 +18,7 @@ import com.gsk.kg.sparqlparser.StringVal
 import com.gsk.kg.sparqlparser.StringLike
 import org.apache.spark.sql.Column
 import com.gsk.kg.engine.ExpressionF._
+import org.apache.spark.sql.DataFrame
 
 /**
   * [[ExpressionF]] is a pattern functor for the recursive
@@ -113,44 +116,34 @@ object ExpressionF {
       coalgebra = fromExpressionCoalg
     )
 
-  def getVariable[T](t: T)(implicit T: Basis[ExpressionF, T]): Option[String] =
-    t.collect[List[String], String] {
-      case StringVal.VARIABLE(v) => v
-    }.headOption
+  def compile[T](t: T)(implicit T: Basis[ExpressionF, T]): DataFrame => Result[Column] = df => {
+    val algebraM: AlgebraM[M, ExpressionF, Column] = AlgebraM.apply[M, ExpressionF, Column] {
+      case EQUALS(l, r)    => M.liftF[Result, DataFrame, Column](EngineError.UnknownFunction("EQUALS").asLeft[Column])
+      case REGEX(l, r)     => M.liftF[Result, DataFrame, Column](EngineError.UnknownFunction("REGEX").asLeft[Column])
+      case STRSTARTS(l, r) => M.liftF[Result, DataFrame, Column](EngineError.UnknownFunction("STRSTARTS").asLeft[Column])
+      case GT(l, r)        => M.liftF[Result, DataFrame, Column](EngineError.UnknownFunction("GT").asLeft[Column])
+      case LT(l, r)        => M.liftF[Result, DataFrame, Column](EngineError.UnknownFunction("LT").asLeft[Column])
+      case OR(l, r)        => M.liftF[Result, DataFrame, Column](EngineError.UnknownFunction("OR").asLeft[Column])
+      case AND(l, r)       => M.liftF[Result, DataFrame, Column](EngineError.UnknownFunction("AND").asLeft[Column])
+      case NEGATE(s)       => M.liftF[Result, DataFrame, Column](EngineError.UnknownFunction("NEGATE").asLeft[Column])
 
-  def getString[T](t: T)(implicit T: Basis[ExpressionF, T]): Option[String] =
-    t.collect[List[String], String] {
-      case StringVal.STRING(s) => s
-    }.headOption
+      case URI(s)                   => Func.iri(s).pure[M]
+      case CONCAT(appendTo, append) => Func.concat(appendTo, append).pure[M]
+      case STR(s)                   => s.pure[M]
+      case STRAFTER(s, f)           => Func.strafter(s, f).pure[M]
+      case ISBLANK(s)               => M.liftF[Result, DataFrame, Column](EngineError.UnknownFunction("ISBLANK").asLeft[Column])
+      case REPLACE(st, pattern, by) => M.liftF[Result, DataFrame, Column](EngineError.UnknownFunction("REPLACE").asLeft[Column])
 
-  def compile[T](t: T)(implicit T: Basis[ExpressionF, T]): Multiset => Column = ms => {
-    val algebraM: AlgebraM[State[Multiset, *], ExpressionF, Column] = AlgebraM.apply[State[Multiset, *], ExpressionF, Column] {
-      case EQUALS(l, r)    => ???
-      case REGEX(l, r)     => ???
-      case STRSTARTS(l, r) => ???
-      case GT(l, r)        => ???
-      case LT(l, r)        => ???
-      case OR(l, r)        => ???
-      case AND(l, r)       => ???
-      case NEGATE(s)       => ???
-
-      case URI(s)                   => Func.iri(s).pure[State[Multiset, *]]
-      case CONCAT(appendTo, append) => Func.concat(appendTo, append).pure[State[Multiset, *]]
-      case STR(s)                   => s.pure[State[Multiset, *]]
-      case STRAFTER(s, f)           => Func.strafter(s, f).pure[State[Multiset, *]]
-      case ISBLANK(s)               => ???
-      case REPLACE(st, pattern, by) => ???
-
-      case STRING(s)   => lit(s).pure[State[Multiset, *]]
-      case NUM(s)      => lit(s).pure[State[Multiset, *]]
-      case VARIABLE(s) => State.inspect[Multiset, Column](multiset => multiset.dataframe(s))
-      case URIVAL(s)   => lit(s).pure[State[Multiset, *]]
-      case BLANK(s)    => lit(s).pure[State[Multiset, *]]
+      case STRING(s)   => lit(s).pure[M]
+      case NUM(s)      => lit(s).pure[M]
+      case VARIABLE(s) => M.inspect[Result, DataFrame, Column](_(s))
+      case URIVAL(s)   => lit(s).pure[M]
+      case BLANK(s)    => lit(s).pure[M]
     }
 
-    val eval = scheme.cataM[State[Multiset, *], ExpressionF, T, Column](algebraM)
+    val eval = scheme.cataM[M, ExpressionF, T, Column](algebraM)
 
-    eval(t).runA(ms).value
+    eval(t).runA(df)
   }
 
 }

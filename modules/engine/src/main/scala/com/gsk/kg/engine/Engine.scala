@@ -1,21 +1,18 @@
 package com.gsk.kg.engine
 
-import cats.data.StateT
-import cats.instances.all._
-import cats.syntax.either._
-import cats.syntax.applicative._
+import cats.Foldable
+import cats.implicits._
 
 import org.apache.spark.sql.DataFrame
 
-import com.gsk.kg.sparqlparser.Expr
+import com.gsk.kg.engine._
+import com.gsk.kg.sparqlparser._
 import com.gsk.kg.sparqlparser.Expr.fixedpoint._
 
 import higherkindness.droste._
-import cats.data.IndexedStateT
 import org.apache.spark.sql.SQLContext
 import com.gsk.kg.sparqlparser.StringVal
 import com.gsk.kg.engine.Multiset._
-import cats.Foldable
 import com.gsk.kg.engine.Predicate.None
 import com.gsk.kg.sparqlparser.Query
 import com.gsk.kg.sparqlparser.Query.Construct
@@ -24,10 +21,6 @@ import com.gsk.kg.sparqlparser.StringVal._
 import com.gsk.kg.sparqlparser.Expression
 
 object Engine {
-
-  type Result[A] = Either[EngineError, A]
-  val Result = Either
-  type M[A] = StateT[Result, DataFrame, A]
 
   def evaluateAlgebraM(implicit sc: SQLContext): AlgebraM[M, ExprF, Multiset] =
     AlgebraM[M, ExprF, Multiset] {
@@ -72,14 +65,18 @@ object Engine {
   ) = {
     val getColumn = ExpressionF.compile(bindFrom)
 
-    r.withColumn(bindTo, getColumn(r)).pure[M]
+    M.liftF[Result, DataFrame, Multiset](
+      getColumn(r.dataframe).map { col =>
+        r.withColumn(bindTo, col)
+      }
+    )
   }
 
   private def evaluateBGPF(
       triples: Seq[Expr.Triple]
   )(implicit sc: SQLContext) = {
     import sc.implicits._
-    StateT.get[Result, DataFrame].map { df: DataFrame =>
+    M.get[Result, DataFrame].map { df: DataFrame =>
       Foldable[List].fold(
         triples.toList.map({ triple =>
           val predicate = Predicate.fromTriple(triple)
@@ -122,7 +119,7 @@ object Engine {
     }
 
   private def notImplemented(constructor: String): M[Multiset] =
-    StateT.liftF[Result, DataFrame, Multiset](
+    M.liftF[Result, DataFrame, Multiset](
       EngineError.General(s"$constructor not implemented").asLeft[Multiset]
     )
 
