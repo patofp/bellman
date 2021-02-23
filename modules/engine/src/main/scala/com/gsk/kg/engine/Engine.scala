@@ -1,60 +1,48 @@
 package com.gsk.kg.engine
 
-import cats.data.StateT
+import cats.Foldable
 import cats.instances.all._
 import cats.syntax.either._
 import cats.syntax.applicative._
 
 import org.apache.spark.sql.DataFrame
 
-import com.gsk.kg.sparqlparser.Expr
+import com.gsk.kg.engine._
+import com.gsk.kg.sparqlparser._
 import com.gsk.kg.sparqlparser.Expr.fixedpoint._
 
 import higherkindness.droste._
-import cats.data.IndexedStateT
 import org.apache.spark.sql.SQLContext
 import com.gsk.kg.sparqlparser.StringVal
 import com.gsk.kg.engine.Multiset._
-import cats.Foldable
 import com.gsk.kg.engine.Predicate.None
 import com.gsk.kg.sparqlparser.Query
 import com.gsk.kg.sparqlparser.Query.Construct
+import com.gsk.kg.sparqlparser.StringFunc._
+import com.gsk.kg.sparqlparser.StringVal._
+import com.gsk.kg.sparqlparser.Expression
 
 object Engine {
-
-  type Result[A] = Either[EngineError, A]
-  val Result = Either
-  type M[A] = StateT[Result, DataFrame, A]
 
   def evaluateAlgebraM(implicit sc: SQLContext): AlgebraM[M, ExprF, Multiset] =
     AlgebraM[M, ExprF, Multiset] {
       case BGPF(triples) => evaluateBGPF(triples)
-      case TripleF(s, p, o) =>
-        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
-      case LeftJoinF(l, r) =>
-        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
-      case FilteredLeftJoinF(l, r, f) =>
-        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
+      case TripleF(s, p, o) => notImplemented("TripleF")
+      case LeftJoinF(l, r) => notImplemented("LeftJoinF")
+      case FilteredLeftJoinF(l, r, f) => notImplemented("FilteredLeftJoinF")
       case UnionF(l, r) =>
         l.union(r).pure[M]
       case ExtendF(bindTo, bindFrom, r) =>
-        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
-      case FilterF(funcs, expr) =>
-        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
-      case JoinF(l, r) =>
-        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
-      case GraphF(g, e) =>
-        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
-      case DistinctF(r) =>
-        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
-      case OffsetLimitF(offset, limit, r) =>
-        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
-      case OpNilF() =>
-        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
-      case TabUnitF() =>
-        StateT.get[Result, DataFrame].map(df => Multiset(Set.empty, df))
+        evaluateExtendF(bindTo, bindFrom, r)
+      case FilterF(funcs, expr) => notImplemented("FilterF")
+      case JoinF(l, r) => notImplemented("JoinF")
+      case GraphF(g, e) => notImplemented("GraphF")
+      case DistinctF(r) => notImplemented("DistinctF")
+      case OffsetLimitF(offset, limit, r) => notImplemented("OffsetLimitF")
+      case OpNilF() => notImplemented("OpNilF")
       case ProjectF(vars, r) =>
         r.select(vars: _*).pure[M]
+      case TabUnitF() => notImplemented("TabUnitF")
     }
 
   def evaluate(
@@ -72,11 +60,25 @@ object Engine {
       .map(QueryExecutor.execute(query))
   }
 
+  private def evaluateExtendF(
+      bindTo: VARIABLE,
+      bindFrom: Expression,
+      r: Multiset
+  ) = {
+    val getColumn = ExpressionF.compile(bindFrom)
+
+    M.liftF[Result, DataFrame, Multiset](
+      getColumn(r.dataframe).map { col =>
+        r.withColumn(bindTo, col)
+      }
+    )
+  }
+
   private def evaluateBGPF(
       triples: Seq[Expr.Triple]
   )(implicit sc: SQLContext) = {
     import sc.implicits._
-    StateT.get[Result, DataFrame].map { df: DataFrame =>
+    M.get[Result, DataFrame].map { df: DataFrame =>
       Foldable[List].fold(
         triples.toList.map({ triple =>
           val predicate = Predicate.fromTriple(triple)
@@ -117,5 +119,10 @@ object Engine {
       case Predicate.None =>
         df
     }
+
+  private def notImplemented(constructor: String): M[Multiset] =
+    M.liftF[Result, DataFrame, Multiset](
+      EngineError.General(s"$constructor not implemented").asLeft[Multiset]
+    )
 
 }

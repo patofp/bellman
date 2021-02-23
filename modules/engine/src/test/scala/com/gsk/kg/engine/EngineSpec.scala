@@ -14,6 +14,10 @@ import org.scalatest.BeforeAndAfterAll
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.apache.spark.sql.Row
 import com.gsk.kg.sparqlparser.Query
+import org.apache.jena.riot.RDFDataMgr
+import org.apache.jena.rdf.model.Model
+import org.apache.jena.riot.lang.CollectorStreamTriples
+import org.apache.jena.riot.RDFParser
 
 class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
@@ -176,7 +180,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     import sqlContext.implicits._
 
     val negative = List(
-        ("doesntmatch", "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://id.gsk.com/dm/1.0/Document>"),
+        ("doesntmatch", "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "http://id.gsk.com/dm/1.0/Document>"),
         ("doesntmatcheither", "<http://id.gsk.com/dm/1.0/docSource>", "potato")
       )
 
@@ -207,6 +211,60 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
         "source"
       )
     )
+
+  }
+
+
+  /**
+    * TODO(pepegar): In order to make this test pass we need the
+    * results to be RDF compliant (mainly, wrapping values correctly)
+    */
+  it should "query a real DF with a real query" ignore {
+    val query = sparql"""
+      PREFIX  schema: <http://schema.org/>
+      PREFIX  rdf:  <http://www.w3.org/2000/01/rdf-schema#>
+      PREFIX  xml:  <http://www.w3.org/XML/1998/namespace>
+      PREFIX  dm:   <http://gsk-kg.rdip.gsk.com/dm/1.0/>
+      PREFIX  prism: <http://prismstandard.org/namespaces/basic/2.0/>
+      PREFIX  litg:  <http://lit-search-api/graph/>
+      PREFIX  litn:  <http://lit-search-api/node/>
+      PREFIX  lite:  <http://lit-search-api/edge/>
+      PREFIX  litp:  <http://lit-search-api/property/>
+
+      CONSTRUCT {
+        ?Document a litn:Document .
+        ?Document litp:docID ?docid .
+      }
+      WHERE{
+        ?d a dm:Document .
+        BIND(STRAFTER(str(?d), "#") as ?docid) .
+        BIND(URI(CONCAT("http://lit-search-api/node/doc#", ?docid)) as ?Document) .
+      }
+      """
+
+    val inputDF = readNTtoDF("fixtures/reference-q1-input.nt")
+
+    val outputDF = readNTtoDF("fixtures/reference-q1-output.nt")
+
+    Engine.evaluate(inputDF, query) shouldBe a[Right[_, _]]
+    Engine.evaluate(inputDF, query).right.get.collect.toSet shouldEqual outputDF.collect().toSet
+  }
+
+  private def readNTtoDF(path: String) = {
+    import sqlContext.implicits._
+    import scala.collection.JavaConverters._
+
+    val filename = s"modules/engine/src/test/resources/$path"
+    val inputStream: CollectorStreamTriples = new CollectorStreamTriples();
+    RDFParser.source(filename).parse(inputStream);
+
+    inputStream
+      .getCollected()
+      .asScala
+      .toList
+      .map(triple =>
+        (triple.getSubject().toString(), triple.getPredicate().toString(), triple.getObject().toString())
+      ).toDF("s", "p", "o")
 
   }
 
