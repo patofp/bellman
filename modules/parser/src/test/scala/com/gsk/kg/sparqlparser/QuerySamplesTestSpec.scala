@@ -254,7 +254,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec {
     val q = QueryConstruct.parse(query)
     q match {
       case Select(vars, Project(vs, BGP(ts)))=>
-        assert(ts.size == 21)
+        assert(ts.size == 22)
       case _ =>
         fail
     }

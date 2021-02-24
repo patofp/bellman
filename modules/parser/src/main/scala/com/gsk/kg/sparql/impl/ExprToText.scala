@@ -12,11 +12,19 @@ object ExprToText {
       st match {
         case sv: StringVal =>
           sv match {
-            case STRING(s) => "\"" + s + "\""
+            case STRING(s,tag) =>
+              "\"" + s + "\"" + {
+                tag match {
+                  case Some(t) if t.startsWith("@") => t
+                  case Some(t) => s"^^${t}"
+                  case None => ""
+                }
+              }
             case NUM(s) => s
             case VARIABLE(s) => s
             case URIVAL(s) => s
             case BLANK(s) => s
+            case BOOL(s) => s
           }
         case sf: StringFunc =>
           sf match {

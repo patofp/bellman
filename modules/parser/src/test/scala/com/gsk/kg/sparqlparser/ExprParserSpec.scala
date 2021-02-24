@@ -185,7 +185,7 @@ class ExprParserSpec extends AnyFlatSpec {
             CONCAT(
               STR(VARIABLE(s2:String)),
               STR(VARIABLE(s3:String))),
-            STRING("#"))),
+            STRING("#",_))),
         BGP(l1:Seq[Triple])) => succeed
       case _ => fail
     }
@@ -194,7 +194,7 @@ class ExprParserSpec extends AnyFlatSpec {
   "Nested filter function" should "return proper nested types" in {
     val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/q17-filter-nested.sparql"), ExprParser.parser(_))
     p.get.value match {
-      case Filter(Seq(STRSTARTS(STR(VARIABLE("?src")),STRING("ner:")),GT(VARIABLE("?year"), STRING("2015"))),
+      case Filter(Seq(STRSTARTS(STR(VARIABLE("?src")),STRING("ner:",None)),GT(VARIABLE("?year"), STRING("2015",None))),
                   BGP(
                     Seq(
                       Triple(
@@ -212,7 +212,7 @@ class ExprParserSpec extends AnyFlatSpec {
   "Simple > FILTER query" should "return the proper type" in {
     val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/q18-filter-gt.sparql"), ExprParser.parser(_))
     p.get.value match {
-      case Filter(List(GT(VARIABLE("?year"), STRING("2015"))),BGP(l1:Seq[Triple])) => succeed
+      case Filter(List(GT(VARIABLE("?year"), STRING("2015",None))),BGP(l1:Seq[Triple])) => succeed
       case _ => fail
     }
   }
@@ -220,7 +220,7 @@ class ExprParserSpec extends AnyFlatSpec {
   "Simple < FILTER query" should "return the proper type" in {
     val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/q19-filter-lt.sparql"), ExprParser.parser(_))
     p.get.value match {
-      case Filter(List(LT(VARIABLE("?year"), STRING("2015"))),BGP(l1:Seq[Triple])) => succeed
+      case Filter(List(LT(VARIABLE("?year"), STRING("2015",None))),BGP(l1:Seq[Triple])) => succeed
       case _ => fail
     }
   }
@@ -238,7 +238,6 @@ class ExprParserSpec extends AnyFlatSpec {
   "Full query1" should "return proper type" in {
     val p = fastparse.parse(TestUtils.sparql2Algebra("/queries/lit-search-1.sparql"),
       ExprParser.parser(_))
-
     val output = TestUtils.readOutputFile("/queries/output/lit-search-1-output.txt")
     assert(output.trim == p.get.value.toString.trim)
   }

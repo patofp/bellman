@@ -12,7 +12,7 @@ class FilterFunctionParserSpec extends AnyFlatSpec{
     val s = """(strstarts (str ?modelname) "ner:")"""
     val p = fastparse.parse(s, FilterFunctionParser.parser(_))
     p.get.value match {
-      case STRSTARTS(STR(VARIABLE("?modelname")), STRING("ner:")) => succeed
+      case STRSTARTS(STR(VARIABLE("?modelname")), STRING("ner:",None)) => succeed
       case _ => fail
     }
   }
@@ -20,7 +20,7 @@ class FilterFunctionParserSpec extends AnyFlatSpec{
   "Equals parser" should "return EQUALS type" in {
     val p = fastparse.parse("""(= ?d "Hello")""", FilterFunctionParser.equalsParen(_))
     p.get.value match {
-      case EQUALS(VARIABLE("?d"), STRING("Hello")) => succeed
+      case EQUALS(VARIABLE("?d"), STRING("Hello",None)) => succeed
       case _ => fail
     }
   }
@@ -28,7 +28,7 @@ class FilterFunctionParserSpec extends AnyFlatSpec{
   "Regex parser" should "return REGEX type" in {
     val p = fastparse.parse("""(regex ?d "Hello")""", FilterFunctionParser.regexParen(_))
     p.get.value match {
-      case REGEX(VARIABLE("?d"), STRING("Hello")) => succeed
+      case REGEX(VARIABLE("?d"), STRING("Hello",None)) => succeed
       case _ => fail
     }
   }
@@ -36,7 +36,7 @@ class FilterFunctionParserSpec extends AnyFlatSpec{
   "GT parser" should "return GT type" in {
     val p = fastparse.parse("""(> ?year "2015")""", FilterFunctionParser.gtParen(_))
     p.get.value match {
-      case GT(VARIABLE("?year"), STRING("2015")) => succeed
+      case GT(VARIABLE("?year"), STRING("2015",None)) => succeed
       case _ => fail
     }
   }
@@ -44,7 +44,7 @@ class FilterFunctionParserSpec extends AnyFlatSpec{
   "LT parser" should "return LT type" in {
     val p = fastparse.parse("""(< ?year "2015")""", FilterFunctionParser.ltParen(_))
     p.get.value match {
-      case LT(VARIABLE("?year"), STRING("2015")) => succeed
+      case LT(VARIABLE("?year"), STRING("2015",None)) => succeed
       case _ => fail
     }
   }
