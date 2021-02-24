@@ -50,6 +50,7 @@ object ExpressionF {
   final case class VARIABLE[A](s: String) extends ExpressionF[A]
   final case class URIVAL[A](s: String) extends ExpressionF[A]
   final case class BLANK[A](s: String) extends ExpressionF[A]
+  final case class BOOL[A](s: String) extends ExpressionF[A]
 
   val fromExpressionCoalg: Coalgebra[ExpressionF, Expression] =
     Coalgebra {
@@ -64,14 +65,15 @@ object ExpressionF {
       case StringFunc.URI(s)                   => URI(s)
       case StringFunc.CONCAT(appendTo, append) => CONCAT(appendTo, append)
       case StringFunc.STR(s)                   => STR(s)
-      case StringFunc.STRAFTER(s, StringVal.STRING(f))           => STRAFTER(s, f)
+      case StringFunc.STRAFTER(s, StringVal.STRING(f,_))           => STRAFTER(s, f)
       case StringFunc.ISBLANK(s)               => ISBLANK(s)
       case StringFunc.REPLACE(st, pattern, by) => REPLACE(st, pattern, by)
-      case StringVal.STRING(s)                 => STRING(s)
+      case StringVal.STRING(s,_)               => STRING(s)
       case StringVal.NUM(s)                    => NUM(s)
       case StringVal.VARIABLE(s)               => VARIABLE(s)
       case StringVal.URIVAL(s)                 => URIVAL(s)
       case StringVal.BLANK(s)                  => BLANK(s)
+      case StringVal.BOOL(s)                   => BOOL(s)
     }
 
   val toExpressionAlgebra: Algebra[ExpressionF, Expression] =
@@ -108,6 +110,7 @@ object ExpressionF {
       case VARIABLE(s) => StringVal.VARIABLE(s)
       case URIVAL(s)   => StringVal.URIVAL(s)
       case BLANK(s)    => StringVal.BLANK(s)
+      case BOOL(s)     => StringVal.BOOL(s)
     }
 
   implicit val basis: Basis[ExpressionF, Expression] =
@@ -139,6 +142,7 @@ object ExpressionF {
       case VARIABLE(s) => M.inspect[Result, DataFrame, Column](_(s))
       case URIVAL(s)   => lit(s).pure[M]
       case BLANK(s)    => lit(s).pure[M]
+      case BOOL(s)    => lit(s).pure[M]
     }
 
     val eval = scheme.cataM[M, ExpressionF, T, Column](algebraM)

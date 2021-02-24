@@ -10,7 +10,7 @@ class StringFuncParserSpec extends AnyFlatSpec {
     val s = "(uri \"http://id.gsk.com/dm/1.0/\")"
     val p = fastparse.parse(s, StringFuncParser.parser(_))
     p.get.value match {
-      case URI(STRING("http://id.gsk.com/dm/1.0/")) => succeed
+      case URI(STRING("http://id.gsk.com/dm/1.0/",_)) => succeed
       case _ => fail
     }
   }
@@ -28,7 +28,7 @@ class StringFuncParserSpec extends AnyFlatSpec {
     val s = "(concat \"http://id.gsk.com/dm/1.0/\" ?src)"
     val p = fastparse.parse(s, StringFuncParser.parser(_))
     p.get.value match {
-      case CONCAT(STRING("http://id.gsk.com/dm/1.0/"), VARIABLE("?src")) => succeed
+      case CONCAT(STRING("http://id.gsk.com/dm/1.0/",_), VARIABLE("?src")) => succeed
       case _ => fail
     }
   }
@@ -37,7 +37,7 @@ class StringFuncParserSpec extends AnyFlatSpec {
     val s = "(uri (concat \"http://id.gsk.com/dm/1.0/\" ?src))"
     val p = fastparse.parse(s, StringFuncParser.parser(_))
     p.get.value match {
-      case URI(CONCAT(STRING("http://id.gsk.com/dm/1.0/"), VARIABLE("?src"))) => succeed
+      case URI(CONCAT(STRING("http://id.gsk.com/dm/1.0/",_), VARIABLE("?src"))) => succeed
       case _ => fail
     }
   }
@@ -55,7 +55,7 @@ class StringFuncParserSpec extends AnyFlatSpec {
     val s = "(strafter ( str ?d) \"#\")"
     val p = fastparse.parse(s, StringFuncParser.parser(_))
     p.get.value match {
-      case STRAFTER(STR(VARIABLE(s1:String)), STRING(s2:String)) => succeed
+      case STRAFTER(STR(VARIABLE(s1:String)), STRING(s2:String,_)) => succeed
       case _ => fail
     }
   }
@@ -64,7 +64,7 @@ class StringFuncParserSpec extends AnyFlatSpec {
     val s = "(uri (strafter (concat (str ?d) (str ?src)) \"#\"))"
     val p = fastparse.parse(s, StringFuncParser.parser(_))
     p.get.value match {
-      case URI(STRAFTER(CONCAT(STR(VARIABLE(a1: String)), STR(VARIABLE(a2: String))), STRING("#"))) => succeed
+      case URI(STRAFTER(CONCAT(STR(VARIABLE(a1: String)), STR(VARIABLE(a2: String))), STRING("#",_))) => succeed
       case _ => fail
     }
   }
