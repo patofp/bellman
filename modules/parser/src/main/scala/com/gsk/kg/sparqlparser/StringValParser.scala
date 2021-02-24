@@ -13,10 +13,11 @@ object StringValParser {
   def variable[_:P]:P[VARIABLE] = P("?" ~ CharsWhileIn("a-zA-Z0-9_")).!.map{VARIABLE}
   def urival[_:P]:P[URIVAL] = iri.map{URIVAL}
   def num[_:P]:P[NUM] = P("-".? ~ CharsWhileIn("0-9") ~ ("." ~ CharsWhileIn("0-9")).?).!.map{NUM} //with optional decimals
+  def blankNode[_:P]:P[BLANK] = P("_:" ~ CharsWhileIn("a-zA-Z0-9_").!).map(BLANK(_))
   def bool[_:P]:P[BOOL] = P("true" | "false").!.map{BOOL}
   def optionLong[_:P]:P[Option[Long]] = P(CharsWhileIn("0-9_")).!.map{ s =>
     if (s.contains('_')) None else Some(s.toLong)
   }
 
-  def tripleValParser[_:P]:P[StringVal] = P(variable | urival | string | num | bool)
+  def tripleValParser[_:P]:P[StringVal] = P(variable | urival | string | num | blankNode | bool)
 }

@@ -42,4 +42,3 @@ object Expr {
   final case class TabUnit() extends Expr
 }
 
-trait Expression
