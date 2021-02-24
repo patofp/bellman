@@ -19,7 +19,7 @@ import org.apache.jena.rdf.model.Model
 import org.apache.jena.riot.lang.CollectorStreamTriples
 import org.apache.jena.riot.RDFParser
 
-class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
+class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
   override implicit def reuseContextIfPossible: Boolean = true
 
@@ -34,11 +34,11 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     ("test", "<http://id.gsk.com/dm/1.0/docSource>", "source")
   )
 
-  "Engine" should "perform query operations in the dataframe" in {
+  "Compiler" should "perform query operations in the dataframe" in {
     import sqlContext.implicits._
 
     val df = dfList.toDF("s", "p", "o")
-    val query = sparql"""
+    val query = """
       SELECT
         ?s ?p ?o
       WHERE {
@@ -46,7 +46,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
       }
       """
 
-    Engine.evaluate(df, query).right.get.collect() shouldEqual df.collect()
+    Compiler.compile(df, query).right.get.collect() shouldEqual df.collect()
   }
 
   it should "execute a query with two dependent BGPs" in {
@@ -54,7 +54,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
     val df: DataFrame = dfList.toDF("s", "p", "o")
 
-    val query = sparql"""
+    val query = """
       SELECT
         ?d ?src
       WHERE {
@@ -63,7 +63,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
       }
       """
 
-    Engine.evaluate(df, query).right.get.collect() shouldEqual Array(
+    Compiler.compile(df, query).right.get.collect() shouldEqual Array(
       Row("test", "source")
     )
   }
@@ -73,7 +73,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
     val df: DataFrame = (("does", "not", "match") :: dfList).toDF("s", "p", "o")
 
-    val query = sparql"""
+    val query = """
       SELECT
         ?s ?o
       WHERE {
@@ -83,7 +83,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
       }
       """
 
-    Engine.evaluate(df, query).right.get.collect() shouldEqual Array(
+    Compiler.compile(df, query).right.get.collect() shouldEqual Array(
       Row("test", "<http://id.gsk.com/dm/1.0/Document>"),
       Row("test", "source")
     )
@@ -94,7 +94,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
     val df: DataFrame = (("does", "not", "match") :: dfList).toDF("s", "p", "o")
 
-    val query = sparql"""
+    val query = """
       SELECT
         ?s ?o ?s2 ?o2
       WHERE {
@@ -104,7 +104,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
       }
       """
 
-    Engine.evaluate(df, query).right.get.collect() shouldEqual Array(
+    Compiler.compile(df, query).right.get.collect() shouldEqual Array(
       Row("test", "<http://id.gsk.com/dm/1.0/Document>", null, null),
       Row(null, null, "test", "source")
     )
@@ -115,7 +115,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
     val df: DataFrame = dfList.toDF("s", "p", "o")
 
-    val query = sparql"""
+    val query = """
       CONSTRUCT {
         ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?o
       } WHERE {
@@ -123,7 +123,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
       }
       """
 
-    Engine.evaluate(df, query).right.get.collect() shouldEqual Array(
+    Compiler.compile(df, query).right.get.collect() shouldEqual Array(
       Row(
         "test",
         "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
@@ -141,7 +141,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
       )
     val df: DataFrame = (positive ++ dfList).toDF("s", "p", "o")
 
-    val query = sparql"""
+    val query = """
       CONSTRUCT {
         ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?o .
         ?s2 <http://id.gsk.com/dm/1.0/docSource> ?o2
@@ -151,7 +151,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
       }
       """
 
-    Engine.evaluate(df, query).right.get.collect().toSet shouldEqual Set(
+    Compiler.compile(df, query).right.get.collect().toSet shouldEqual Set(
       Row(
         "doesmatch",
         "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
@@ -186,7 +186,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
     val df: DataFrame = (negative ++ dfList).toDF("s", "p", "o")
 
-    val query = sparql"""
+    val query = """
       CONSTRUCT
       {
         ?d <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://id.gsk.com/dm/1.0/Document> .
@@ -199,7 +199,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
       }
       """
 
-    Engine.evaluate(df, query).right.get.collect().toSet shouldEqual Set(
+    Compiler.compile(df, query).right.get.collect().toSet shouldEqual Set(
       Row(
         "test",
         "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
@@ -220,7 +220,7 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     * results to be RDF compliant (mainly, wrapping values correctly)
     */
   it should "query a real DF with a real query" ignore {
-    val query = sparql"""
+    val query = """
       PREFIX  schema: <http://schema.org/>
       PREFIX  rdf:  <http://www.w3.org/2000/01/rdf-schema#>
       PREFIX  xml:  <http://www.w3.org/XML/1998/namespace>
@@ -246,8 +246,8 @@ class EngineSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
     val outputDF = readNTtoDF("fixtures/reference-q1-output.nt")
 
-    Engine.evaluate(inputDF, query) shouldBe a[Right[_, _]]
-    Engine.evaluate(inputDF, query).right.get.collect.toSet shouldEqual outputDF.collect().toSet
+    Compiler.compile(inputDF, query) shouldBe a[Right[_, _]]
+    Compiler.compile(inputDF, query).right.get.collect.toSet shouldEqual outputDF.collect().toSet
   }
 
   private def readNTtoDF(path: String) = {
