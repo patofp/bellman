@@ -30,6 +30,7 @@ sealed trait DAG[A] {
 
 }
 
+// scalastyle:off number.of.methods
 object DAG {
   final case class Describe[A](vars: List[VARIABLE], r: A) extends DAG[A]
   final case class Ask[A](r: A) extends DAG[A]
@@ -168,11 +169,12 @@ object DAG {
     lazy val convert = scheme.cata(transExpr.algebra)
 
     query match {
-	    case Query.Describe(vars, r) => describeR(vars.toList, convert(r))
-	    case Query.Ask(r) => askR(convert(r))
-	    case Query.Construct(vars, bgp, r) => constructR(bgp, convert(r))
-	    case Query.Select(vars, r) => projectR(vars.toList, convert(r))
+      case Query.Describe(vars, r) => describeR(vars.toList, convert(r))
+      case Query.Ask(r) => askR(convert(r))
+      case Query.Construct(vars, bgp, r) => constructR(bgp, convert(r))
+      case Query.Select(vars, r) => projectR(vars.toList, convert(r))
     }
   }
 
 }
+// scalastyle:on scalastyle:off number.of.methods
