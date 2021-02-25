@@ -36,9 +36,11 @@ jobs:
         with:
           GITHUB_LOGIN: github-actions[bot]
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MERGE_METHOD: MERGE
       - name: Dependabot Merge
         if: success()
         uses: ridedott/merge-me-action@v2.2.4
         with:
           GITHUB_LOGIN: dependabot[bot]
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MERGE_METHOD: MERGE
