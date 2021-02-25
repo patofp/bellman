@@ -11,7 +11,6 @@ import org.apache.spark.sql.DataFrame
 import higherkindness.droste.Trans
 import com.gsk.kg.sparqlparser.Expr.fixedpoint._
 import higherkindness.droste.Basis
-import higherkindness.droste.Project
 
 object Compiler {
 
@@ -30,9 +29,13 @@ object Compiler {
     */
   def compiler(df: DataFrame)(implicit sc: SQLContext): Phase[String, DataFrame] =
     parser >>>
+      transformToGraph >>>
       optimizer >>>
       engine(df)
 
+
+  def transformToGraph[T: Basis[DAG, *]]: Phase[Query, T] =
+     Arrow[Phase].lift(q => DAG.fromQuery(q))
 
   /**
     * The engine phase receives a query and applies it to the given
@@ -42,7 +45,7 @@ object Compiler {
     * @param sc
     * @return
     */
-  def engine(df: DataFrame)(implicit sc: SQLContext): Phase[Query, DataFrame] =
+  def engine[T: Basis[DAG, *]](df: DataFrame)(implicit sc: SQLContext): Phase[T, DataFrame] =
     Kleisli { case query =>
       M.liftF(Engine.evaluate(df, query))
     }
@@ -53,6 +56,6 @@ object Compiler {
   val parser: Phase[String, Query] =
     Arrow[Phase].lift(QueryConstruct.parse)
 
-  val optimizer: Phase[Query, Query] = Arrow[Phase].id
+  def optimizer[T: Basis[DAG, *]]: Phase[T, T] = Arrow[Phase].id
 
 }

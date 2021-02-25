@@ -33,7 +33,7 @@ sealed trait DAG[A] {
 object DAG {
   final case class Describe[A](vars: List[VARIABLE], r: A) extends DAG[A]
   final case class Ask[A](r: A) extends DAG[A]
-  final case class Construct[A](bgp: A, r: A) extends DAG[A]
+  final case class Construct[A](bgp: Expr.BGP, r: A) extends DAG[A]
   final case class Scan[A](graph: String, expr: A) extends DAG[A]
   final case class Project[A](variables: List[VARIABLE], r: A) extends DAG[A]
   final case class Bind[A](variable: VARIABLE, expression: Expression, r: A)
@@ -60,7 +60,7 @@ object DAG {
       fa match {
         case DAG.Describe(vars, r)     => f(r).map(describe(vars, _))
         case DAG.Ask(r)                => f(r).map(ask)
-        case DAG.Construct(bgp, r)     => (f(bgp), f(r)).mapN(construct)
+        case DAG.Construct(bgp, r)     => f(r).map(construct(bgp, _))
         case DAG.Scan(graph, expr)     => f(expr).map(scan(graph, _))
         case DAG.Project(variables, r) => f(r).map(project(variables, _))
         case DAG.Bind(variable, expression, r) =>
@@ -86,7 +86,7 @@ object DAG {
   // Smart constructors for better type inference (they return DAG[A] instead of the case class itself)
   def describe[A](vars: List[VARIABLE], r: A): DAG[A] = Describe[A](vars, r)
   def ask[A](r: A): DAG[A] = Ask[A](r)
-  def construct[A](bgp: A, r: A): DAG[A] = Construct[A](bgp, r)
+  def construct[A](bgp: Expr.BGP, r: A): DAG[A] = Construct[A](bgp, r)
   def scan[A](graph: String, expr: A): DAG[A] = Scan[A](graph, expr)
   def project[A](variables: List[VARIABLE], r: A): DAG[A] =
     Project[A](variables, r)
@@ -110,7 +110,7 @@ object DAG {
   def describeR[T: Embed[DAG, *]](vars: List[VARIABLE], r: T): T =
     describe[T](vars, r).embed
   def askR[T: Embed[DAG, *]](r: T): T = ask[T](r).embed
-  def constructR[T: Embed[DAG, *]](bgp: T, r: T): T = construct[T](bgp, r).embed
+  def constructR[T: Embed[DAG, *]](bgp: Expr.BGP, r: T): T = construct[T](bgp, r).embed
   def scanR[T: Embed[DAG, *]](graph: String, expr: T): T =
     scan[T](graph, expr).embed
   def projectR[T: Embed[DAG, *]](variables: List[VARIABLE], r: T): T =
@@ -147,7 +147,7 @@ object DAG {
     * @param query
     * @return
     */
-  def fromQuery[T: Basis[DAG, *]](query: Query): T = {
+  def fromQuery[T: Embed[DAG, *]](query: Query): T = {
     lazy val transExpr: Trans[ExprF, DAG, T] = Trans {
       case ExtendF(bindTo, bindFrom, r)   => bind(bindTo, bindFrom, r)
       case FilteredLeftJoinF(l, r, f)     => leftJoin(l, r, f.toList)
@@ -170,7 +170,7 @@ object DAG {
     query match {
 	    case Query.Describe(vars, r) => describeR(vars.toList, convert(r))
 	    case Query.Ask(r) => askR(convert(r))
-	    case Query.Construct(vars, bgp, r) => constructR(convert(bgp), convert(r))
+	    case Query.Construct(vars, bgp, r) => constructR(bgp, convert(r))
 	    case Query.Select(vars, r) => projectR(vars.toList, convert(r))
     }
   }

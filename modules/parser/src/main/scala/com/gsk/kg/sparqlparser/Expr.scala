@@ -41,4 +41,3 @@ object Expr {
   final case class OpNil() extends Expr
   final case class TabUnit() extends Expr
 }
-
