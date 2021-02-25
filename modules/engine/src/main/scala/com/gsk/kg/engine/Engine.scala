@@ -6,13 +6,14 @@ import cats.syntax.either._
 import cats.syntax.applicative._
 
 import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.functions._
 
 import com.gsk.kg.engine._
 import com.gsk.kg.sparqlparser._
 import com.gsk.kg.sparqlparser.Expr.fixedpoint._
 
 import higherkindness.droste._
-import org.apache.spark.sql.SQLContext
 import com.gsk.kg.sparqlparser.StringVal
 import com.gsk.kg.engine.Multiset._
 import com.gsk.kg.engine.Predicate.None
@@ -24,43 +25,74 @@ import com.gsk.kg.sparqlparser.Expression
 
 object Engine {
 
-  def evaluateAlgebraM(implicit sc: SQLContext): AlgebraM[M, ExprF, Multiset] =
-    AlgebraM[M, ExprF, Multiset] {
-      case BGPF(triples) => evaluateBGPF(triples)
-      case TripleF(s, p, o) => notImplemented("TripleF")
-      case LeftJoinF(l, r) => notImplemented("LeftJoinF")
-      case FilteredLeftJoinF(l, r, f) => notImplemented("FilteredLeftJoinF")
-      case UnionF(l, r) =>
-        l.union(r).pure[M]
-      case ExtendF(bindTo, bindFrom, r) =>
-        evaluateExtendF(bindTo, bindFrom, r)
-      case FilterF(funcs, expr) => notImplemented("FilterF")
-      case JoinF(l, r) => notImplemented("JoinF")
-      case GraphF(g, e) => notImplemented("GraphF")
-      case DistinctF(r) => notImplemented("DistinctF")
-      case OffsetLimitF(offset, limit, r) => notImplemented("OffsetLimitF")
-      case OpNilF() => notImplemented("OpNilF")
-      case ProjectF(vars, r) =>
-        r.select(vars: _*).pure[M]
-      case TabUnitF() => notImplemented("TabUnitF")
+  def evaluateAlgebraM(implicit sc: SQLContext): AlgebraM[M, DAG, Multiset] =
+    AlgebraM[M, DAG, Multiset] {
+      case DAG.Describe(vars, r)     => notImplemented("Describe")
+      case DAG.Ask(r)                => notImplemented("Ask")
+      case DAG.Construct(bgp, r)     => evaluateConstruct(bgp, r)
+      case DAG.Scan(graph, expr)     => notImplemented("Scan")
+      case DAG.Project(variables, r) => r.select(variables: _*).pure[M]
+      case DAG.Bind(variable, expression, r) =>
+        evaluateBind(variable, expression, r)
+      case DAG.Triple(s, p, o)               => evaluateTriple(s, p, o)
+      case DAG.BGP(triples)                  => Foldable[List].fold(triples).pure[M]
+      case DAG.LeftJoin(l, r, filters)       => notImplemented("LeftJoin")
+      case DAG.Union(l, r)                   => l.union(r).pure[M]
+      case DAG.Filter(funcs, expr)           => notImplemented("Filter")
+      case DAG.Join(l, r)                    => notImplemented("Join")
+      case DAG.OffsetLimit(offset, limit, r) => notImplemented("OffsetLimit")
+      case DAG.Distinct(r)                   => notImplemented("Distinct")
+      case DAG.Noop(str)                     => notImplemented("Noop")
     }
 
-  def evaluate(
+  def evaluate[T: Basis[DAG, *]](
       dataframe: DataFrame,
-      query: Query
+      dag: T
   )(implicit
       sc: SQLContext
   ): Result[DataFrame] = {
     val eval =
-      scheme.cataM[M, ExprF, Expr, Multiset](evaluateAlgebraM)
+      scheme.cataM[M, DAG, T, Multiset](evaluateAlgebraM)
 
-    eval(query.r)
+    eval(dag)
       .runA(dataframe)
       .map(_.dataframe)
-      .map(QueryExecutor.execute(query))
   }
 
-  private def evaluateExtendF(
+  private def evaluateConstruct[T](
+      bgp: Expr.BGP,
+      r: Multiset
+  )(implicit sc: SQLContext, T: Basis[DAG, T]): M[Multiset] = {
+    import sc.implicits._
+    val acc = List.empty[(String, String, String)].toDF("s", "p", "o")
+
+    Multiset(
+      Set.empty,
+      bgp.triples
+        .map({ triple =>
+          import org.apache.spark.sql.functions._
+
+          val cols = (triple.getVariables ++ triple.getPredicates)
+
+          cols
+            .foldLeft(r.dataframe)({
+              case (df, (sv, pos)) =>
+                if (df.columns.contains(sv.s)) {
+                  df.withColumnRenamed(sv.s, pos)
+                } else {
+                  df.withColumn(pos, lit(sv.s))
+                }
+            })
+            .select("s", "p", "o")
+        })
+        .foldLeft(acc) { (acc, other) =>
+          acc.union(other)
+        }
+        .dropDuplicates()
+    ).pure[M]
+  }
+
+  private def evaluateBind(
       bindTo: VARIABLE,
       bindFrom: Expression,
       r: Multiset
@@ -74,27 +106,25 @@ object Engine {
     )
   }
 
-  private def evaluateBGPF(
-      triples: Seq[Expr.Triple]
+  private def evaluateTriple(
+      s: StringVal,
+      p: StringVal,
+      o: StringVal
   )(implicit sc: SQLContext) = {
     import sc.implicits._
     M.get[Result, DataFrame].map { df: DataFrame =>
-      Foldable[List].fold(
-        triples.toList.map({ triple =>
-          val predicate = Predicate.fromTriple(triple)
-          val current = applyPredicateToDataFrame(predicate, df)
-          val variables = triple.getVariables
-          val selected =
-            current.select(variables.map(v => $"${v._2}".as(v._1.s)): _*)
+      val triple = Expr.Triple(s, p, o)
+      val predicate = Predicate.fromTriple(triple)
+      val current = applyPredicateToDataFrame(predicate, df)
+      val variables = triple.getVariables
+      val selected =
+        current.select(variables.map(v => $"${v._2}".as(v._1.s)): _*)
 
-          Multiset(
-            variables.map(_._1.asInstanceOf[StringVal.VARIABLE]).toSet,
-            selected
-          )
-        })
+      Multiset(
+        variables.map(_._1.asInstanceOf[StringVal.VARIABLE]).toSet,
+        selected
       )
     }
-
   }
 
   private def applyPredicateToDataFrame(
