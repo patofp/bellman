@@ -1,4 +1,5 @@
 package com.gsk.kg.engine
+package data
 
 
 import com.gsk.kg.sparql.syntax.all._

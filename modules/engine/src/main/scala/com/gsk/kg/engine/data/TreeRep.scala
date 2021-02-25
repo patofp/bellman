@@ -1,4 +1,4 @@
-package com.gsk.kg.engine
+package com.gsk.kg.engine.data
 
 import cats.instances.function._
 import cats.free.Trampoline
