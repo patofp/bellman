@@ -18,7 +18,7 @@ import com.gsk.kg.engine.Multiset._
 import com.gsk.kg.engine.Predicate.None
 import com.gsk.kg.sparqlparser.Query
 import com.gsk.kg.sparqlparser.Query.Construct
-import com.gsk.kg.sparqlparser.StringFunc._
+import com.gsk.kg.sparqlparser.BuildInFunc._
 import com.gsk.kg.sparqlparser.StringVal._
 import com.gsk.kg.sparqlparser.Expression
 
