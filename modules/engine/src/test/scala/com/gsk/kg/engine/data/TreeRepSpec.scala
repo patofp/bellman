@@ -36,20 +36,21 @@ class TreeRepSpec extends AnyFlatSpec with Matchers {
           )
         )
       )
-    ).drawTree shouldEqual """1
-       ||
-       |+- 2
-       ||  |
-       ||  `- 5
-       ||
-       |+- 3
-       ||  |
-       ||  `- 6
-       ||
-       |`- 4
-       |   |
-       |   `- 7
-       |""".stripMargin
+    ).drawTree shouldEqual """
+1
+|
++- 2
+|  |
+|  `- 5
+|
++- 3
+|  |
+|  `- 6
+|
+`- 4
+   |
+   `- 7
+""".trim()
 
   }
 
