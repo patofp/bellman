@@ -35,7 +35,7 @@ object Compiler {
 
 
   def transformToGraph[T: Basis[DAG, *]]: Phase[Query, T] =
-     Arrow[Phase].lift(q => DAG.fromQuery(q))
+     Arrow[Phase].lift(DAG.fromQuery)
 
   /**
     * The engine phase receives a query and applies it to the given

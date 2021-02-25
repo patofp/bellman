@@ -45,8 +45,7 @@ object DAG {
   final case class LeftJoin[A](l: A, r: A, filters: List[Expression])
       extends DAG[A]
   final case class Union[A](l: A, r: A) extends DAG[A]
-  final case class Filter[A](funcs: List[Expression], expr: A)
-      extends DAG[A]
+  final case class Filter[A](funcs: List[Expression], expr: A) extends DAG[A]
   final case class Join[A](l: A, r: A) extends DAG[A]
   final case class OffsetLimit[A](
       offset: Option[Long],
@@ -80,7 +79,7 @@ object DAG {
         case DAG.OffsetLimit(offset, limit, r) =>
           f(r).map(offsetLimit(offset, limit, _))
         case DAG.Distinct(r) => f(r).map(distinct)
-        case DAG.Noop(str) => noop(str).pure[G]
+        case DAG.Noop(str)   => noop(str).pure[G]
       }
   }
 
@@ -111,7 +110,8 @@ object DAG {
   def describeR[T: Embed[DAG, *]](vars: List[VARIABLE], r: T): T =
     describe[T](vars, r).embed
   def askR[T: Embed[DAG, *]](r: T): T = ask[T](r).embed
-  def constructR[T: Embed[DAG, *]](bgp: Expr.BGP, r: T): T = construct[T](bgp, r).embed
+  def constructR[T: Embed[DAG, *]](bgp: Expr.BGP, r: T): T =
+    construct[T](bgp, r).embed
   def scanR[T: Embed[DAG, *]](graph: String, expr: T): T =
     scan[T](graph, expr).embed
   def projectR[T: Embed[DAG, *]](variables: List[VARIABLE], r: T): T =
@@ -141,19 +141,29 @@ object DAG {
   def distinctR[T: Embed[DAG, *]](r: T): T = distinct[T](r).embed
   def noopR[T: Embed[DAG, *]](trace: String): T = noop[T](trace).embed
 
-
   /**
     * Transform a [[Query]] into its [[Fix[DAG]]] representation
     *
     * @param query
     * @return
     */
-  def fromQuery[T: Embed[DAG, *]](query: Query): T = {
-    lazy val transExpr: Trans[ExprF, DAG, T] = Trans {
+  def fromQuery[T: Embed[DAG, *]]: Query => T = {
+    case Query.Describe(vars, r) =>
+      describeR(vars.toList, fromExpr[T].apply(r))
+    case Query.Ask(r) => askR(fromExpr[T].apply(r))
+    case Query.Construct(vars, bgp, r) =>
+      constructR(bgp, fromExpr[T].apply(r))
+    case Query.Select(vars, r) => projectR(vars.toList, fromExpr[T].apply(r))
+  }
+
+  def fromExpr[T: Embed[DAG, *]]: Expr => T = scheme.cata(transExpr.algebra)
+
+  def transExpr[T: Embed[DAG, *]]: Trans[ExprF, DAG, T] =
+    Trans {
       case ExtendF(bindTo, bindFrom, r)   => bind(bindTo, bindFrom, r)
       case FilteredLeftJoinF(l, r, f)     => leftJoin(l, r, f.toList)
       case UnionF(l, r)                   => union(l, r)
-      case BGPF(triples)                  => bgp(triples.toList.map(convert))
+      case BGPF(triples)                  => bgp(triples.toList.map(fromExpr))
       case OpNilF()                       => noop("OpNilF not supported yet")
       case GraphF(g, e)                   => scan(g.s, e)
       case JoinF(l, r)                    => join(l, r)
@@ -165,16 +175,6 @@ object DAG {
       case FilterF(funcs, expr)           => filter(funcs.toList, expr)
       case TabUnitF()                     => noop("TabUnitF not supported yet")
     }
-
-    lazy val convert = scheme.cata(transExpr.algebra)
-
-    query match {
-      case Query.Describe(vars, r) => describeR(vars.toList, convert(r))
-      case Query.Ask(r) => askR(convert(r))
-      case Query.Construct(vars, bgp, r) => constructR(bgp, convert(r))
-      case Query.Select(vars, r) => projectR(vars.toList, convert(r))
-    }
-  }
 
 }
 // scalastyle:on scalastyle:off number.of.methods

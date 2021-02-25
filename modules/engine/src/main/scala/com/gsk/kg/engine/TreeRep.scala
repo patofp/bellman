@@ -53,8 +53,11 @@ sealed trait TreeRep {
     def shift(first: String, other: String, s: Vector[StringBuilder]): Vector[StringBuilder] = {
       var i = 0
       while (i < s.length) {
-        if (i == 0) s(i).append(first)
-        else s(i).append(other)
+        if (i == 0) {
+          s(i).append(first)
+        } else {
+          s(i).append(other)
+        }
         i += 1
       }
       s
