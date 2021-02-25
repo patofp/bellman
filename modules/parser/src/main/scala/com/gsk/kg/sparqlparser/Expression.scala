@@ -5,23 +5,21 @@ package com.gsk.kg.sparqlparser
  */
 sealed trait Expression
 
-sealed trait FilterFunction extends Expression
+sealed trait Conditional extends Expression
 
-object FilterFunction {
-  final case class EQUALS(l:Expression, r:Expression) extends FilterFunction
-  final case class REGEX(l:Expression, r:Expression) extends FilterFunction
-  final case class STRSTARTS(l:Expression, r:Expression) extends FilterFunction
-  final case class GT(l:Expression, r:Expression) extends FilterFunction
-  final case class LT(l:Expression, r:Expression) extends FilterFunction
-  final case class OR(l:Expression, r:Expression) extends FilterFunction
-  final case class AND(l:Expression, r:Expression) extends FilterFunction
-  final case class NEGATE(s: Expression) extends FilterFunction
-
+object Conditional {
+  final case class EQUALS(l:Expression, r:Expression) extends Conditional
+  final case class GT(l:Expression, r:Expression) extends Conditional
+  final case class LT(l:Expression, r:Expression) extends Conditional
+  final case class OR(l:Expression, r:Expression) extends Conditional
+  final case class AND(l:Expression, r:Expression) extends Conditional
+  final case class NEGATE(s: Expression) extends Conditional
 }
 
 sealed trait StringLike extends Expression
 
-sealed trait StringFunc extends StringLike
+sealed trait BuildInFunc extends StringLike
+
 sealed trait StringVal extends StringLike {
   val s: String
   def isVariable: Boolean = this match {
@@ -34,13 +32,15 @@ sealed trait StringVal extends StringLike {
   }
 }
 
-object StringFunc {
-  final case class URI(s:Expression) extends StringFunc
-  final case class CONCAT(appendTo:Expression, append:Expression) extends StringFunc
-  final case class STR(s:Expression) extends StringFunc
-  final case class STRAFTER(s:Expression, f:Expression) extends StringFunc
-  final case class ISBLANK(s: Expression) extends StringFunc
-  final case class REPLACE(st: Expression, pattern: Expression, by: Expression) extends StringFunc
+object BuildInFunc {
+  final case class URI(s:Expression) extends BuildInFunc
+  final case class CONCAT(appendTo:Expression, append:Expression) extends BuildInFunc
+  final case class STR(s:Expression) extends BuildInFunc
+  final case class STRAFTER(s:Expression, f:Expression) extends BuildInFunc
+  final case class STRSTARTS(l:Expression, r:Expression) extends BuildInFunc
+  final case class ISBLANK(s: Expression) extends BuildInFunc
+  final case class REPLACE(st: Expression, pattern: Expression, by: Expression) extends BuildInFunc
+  final case class REGEX(l:Expression, r:Expression) extends BuildInFunc
 }
 
 object StringVal {

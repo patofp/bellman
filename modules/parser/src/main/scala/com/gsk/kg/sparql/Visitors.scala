@@ -2,7 +2,7 @@ package com.gsk.kg.sparql
 
 import com.gsk.kg.sparqlparser.Expr._
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
-import com.gsk.kg.sparqlparser.{Expr, Expression, FilterFunction, StringLike}
+import com.gsk.kg.sparqlparser.{Expr, Expression, Conditional, StringLike}
 
 trait Visitor[T] {
   def visitTriple(triple: Triple): T

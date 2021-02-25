@@ -1,8 +1,8 @@
 package com.gsk.kg.sparqlparser
 import com.gsk.kg.sparqlparser.Expr._
-import com.gsk.kg.sparqlparser.FilterFunction._
+import com.gsk.kg.sparqlparser.Conditional._
 import com.gsk.kg.sparqlparser.Query.{Construct, Describe, Select}
-import com.gsk.kg.sparqlparser.StringFunc._
+import com.gsk.kg.sparqlparser.BuildInFunc._
 import com.gsk.kg.sparqlparser.StringVal._
 import org.apache.jena.query.QueryFactory
 import org.apache.jena.sparql.algebra.{Algebra, Op}
@@ -254,7 +254,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec {
     val q = QueryConstruct.parse(query)
     q match {
       case Select(vars, Project(vs, BGP(ts)))=>
-        assert(ts.size == 22)
+        assert(ts.size == 21)
       case _ =>
         fail
     }

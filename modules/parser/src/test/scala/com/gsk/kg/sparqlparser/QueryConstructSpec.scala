@@ -45,6 +45,7 @@ class QueryConstructSpec extends AnyFlatSpec {
   }
 
   "Complex lit-search query" should "return proper Construct type" in {
+    val a = 1
     TestUtils.query("/queries/lit-search-3.sparql") match {
       case Construct(vars, bgp, expr) =>
         assert(bgp.triples.size == 11)
