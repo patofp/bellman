@@ -4,8 +4,8 @@ import cats.syntax.either._
 
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions.{concat => cc, _}
-import com.gsk.kg.sparqlparser.StringFunc
-import com.gsk.kg.sparqlparser.StringFunc._
+import com.gsk.kg.sparqlparser.BuildInFunc
+import com.gsk.kg.sparqlparser.BuildInFunc._
 import com.gsk.kg.sparqlparser.StringVal
 import com.gsk.kg.sparqlparser.Expression
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE

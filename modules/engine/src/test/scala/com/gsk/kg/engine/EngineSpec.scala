@@ -2,8 +2,8 @@ package com.gsk.kg.engine
 
 import com.gsk.kg.sparql.syntax.all._
 import com.gsk.kg.sparqlparser.Expr._
-import com.gsk.kg.sparqlparser.FilterFunction._
-import com.gsk.kg.sparqlparser.StringFunc._
+import com.gsk.kg.sparqlparser.Conditional._
+import com.gsk.kg.sparqlparser.BuildInFunc._
 import com.gsk.kg.sparqlparser.StringVal._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers

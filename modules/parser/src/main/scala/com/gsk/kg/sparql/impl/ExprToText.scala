@@ -1,9 +1,9 @@
 package com.gsk.kg.sparql.impl
 
-import com.gsk.kg.sparqlparser.FilterFunction._
-import com.gsk.kg.sparqlparser.StringFunc.{CONCAT, ISBLANK, REPLACE, STR, STRAFTER, URI}
+import com.gsk.kg.sparqlparser.Conditional._
+import com.gsk.kg.sparqlparser.BuildInFunc._
 import com.gsk.kg.sparqlparser.StringVal._
-import com.gsk.kg.sparqlparser.{Expression, FilterFunction, StringFunc, StringLike, StringVal}
+import com.gsk.kg.sparqlparser.{Expression, Conditional, BuildInFunc, StringLike, StringVal}
 
 object ExprToText {
 
@@ -26,7 +26,7 @@ object ExprToText {
             case BLANK(s) => s
             case BOOL(s) => s
           }
-        case sf: StringFunc =>
+        case sf: BuildInFunc =>
           sf match {
             case STR(s) => s"str(${s.text})"
             case URI(s) => s"uri(${s.text})"
@@ -34,21 +34,21 @@ object ExprToText {
             case CONCAT(appendTo, append) => s"concat(${appendTo.text}, ${append.text})"
             case ISBLANK(s) => s"isBlank(s)"
             case REPLACE(st, pattern, by) => s"replace(${st.text}, ${pattern.text}, ${by.text})"
+            case REGEX(l, r) => s"regex(${l.text}, ${r.text})"
+            case STRSTARTS(l, r) => s"strstarts(${l.text}, ${r.text})"
           }
       }
     }
   }
 
-  implicit class FilterFunctionToText(st: FilterFunction) {
+  implicit class ConditionalToText(st: Conditional) {
     def text: String = {
       st match {
-        case REGEX(l, r) => s"regex(${l.text}, ${r.text})"
         case EQUALS(l, r) => s"${l.text} = ${r.text}"
         case GT(l, r) => s"${l.text} > ${r.text}"
         case LT(l, r) => s"${l.text} < ${r.text}"
         case OR(l, r) => s"${l.text} || ${r.text}"
         case AND(l, r) => s"${l.text} && ${r.text}"
-        case STRSTARTS(l, r) => s"strstarts(${l.text}, ${r.text})"
         case NEGATE(s) => s"! ${s}"
       }
     }
@@ -58,7 +58,7 @@ object ExprToText {
     def text: String = {
       e match {
         case st: StringLike => st.text
-        case ff: FilterFunction => ff.text
+        case ff: Conditional => ff.text
       }
     }
   }

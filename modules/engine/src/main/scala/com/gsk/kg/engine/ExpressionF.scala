@@ -12,8 +12,8 @@ import higherkindness.droste.macros.deriveTraverse
 import org.apache.spark.sql.functions._
 
 import com.gsk.kg.sparqlparser.Expression
-import com.gsk.kg.sparqlparser.FilterFunction
-import com.gsk.kg.sparqlparser.StringFunc
+import com.gsk.kg.sparqlparser.Conditional
+import com.gsk.kg.sparqlparser.BuildInFunc
 import com.gsk.kg.sparqlparser.StringVal
 import com.gsk.kg.sparqlparser.StringLike
 import org.apache.spark.sql.Column
@@ -54,20 +54,20 @@ object ExpressionF {
 
   val fromExpressionCoalg: Coalgebra[ExpressionF, Expression] =
     Coalgebra {
-      case FilterFunction.EQUALS(l, r)         => EQUALS(l, r)
-      case FilterFunction.REGEX(l, r)          => REGEX(l, r)
-      case FilterFunction.STRSTARTS(l, r)      => STRSTARTS(l, r)
-      case FilterFunction.GT(l, r)             => GT(l, r)
-      case FilterFunction.LT(l, r)             => LT(l, r)
-      case FilterFunction.OR(l, r)             => OR(l, r)
-      case FilterFunction.AND(l, r)            => AND(l, r)
-      case FilterFunction.NEGATE(s)            => NEGATE(s)
-      case StringFunc.URI(s)                   => URI(s)
-      case StringFunc.CONCAT(appendTo, append) => CONCAT(appendTo, append)
-      case StringFunc.STR(s)                   => STR(s)
-      case StringFunc.STRAFTER(s, StringVal.STRING(f,_))           => STRAFTER(s, f)
-      case StringFunc.ISBLANK(s)               => ISBLANK(s)
-      case StringFunc.REPLACE(st, pattern, by) => REPLACE(st, pattern, by)
+      case Conditional.EQUALS(l, r)         => EQUALS(l, r)
+      case Conditional.GT(l, r)             => GT(l, r)
+      case Conditional.LT(l, r)             => LT(l, r)
+      case Conditional.OR(l, r)             => OR(l, r)
+      case Conditional.AND(l, r)            => AND(l, r)
+      case Conditional.NEGATE(s)            => NEGATE(s)
+      case BuildInFunc.URI(s)                   => URI(s)
+      case BuildInFunc.CONCAT(appendTo, append) => CONCAT(appendTo, append)
+      case BuildInFunc.STR(s)                   => STR(s)
+      case BuildInFunc.STRAFTER(s, StringVal.STRING(f,_))           => STRAFTER(s, f)
+      case BuildInFunc.ISBLANK(s)               => ISBLANK(s)
+      case BuildInFunc.REPLACE(st, pattern, by) => REPLACE(st, pattern, by)
+      case BuildInFunc.REGEX(l, r)          => REGEX(l, r)
+      case BuildInFunc.STRSTARTS(l, r)      => STRSTARTS(l, r)
       case StringVal.STRING(s,_)               => STRING(s)
       case StringVal.NUM(s)                    => NUM(s)
       case StringVal.VARIABLE(s)               => VARIABLE(s)
@@ -78,29 +78,29 @@ object ExpressionF {
 
   val toExpressionAlgebra: Algebra[ExpressionF, Expression] =
     Algebra {
-      case EQUALS(l, r)    => FilterFunction.EQUALS(l, r)
-      case REGEX(l, r)     => FilterFunction.REGEX(l, r)
-      case STRSTARTS(l, r) => FilterFunction.STRSTARTS(l, r)
-      case GT(l, r)        => FilterFunction.GT(l, r)
-      case LT(l, r)        => FilterFunction.LT(l, r)
-      case OR(l, r)        => FilterFunction.OR(l, r)
-      case AND(l, r)       => FilterFunction.AND(l, r)
-      case NEGATE(s)       => FilterFunction.NEGATE(s)
-      case URI(s)          => StringFunc.URI(s.asInstanceOf[StringLike])
+      case EQUALS(l, r)    => Conditional.EQUALS(l, r)
+      case GT(l, r)        => Conditional.GT(l, r)
+      case LT(l, r)        => Conditional.LT(l, r)
+      case OR(l, r)        => Conditional.OR(l, r)
+      case AND(l, r)       => Conditional.AND(l, r)
+      case NEGATE(s)       => Conditional.NEGATE(s)
+      case REGEX(l, r)     => BuildInFunc.REGEX(l, r)
+      case STRSTARTS(l, r) => BuildInFunc.STRSTARTS(l, r)
+      case URI(s)          => BuildInFunc.URI(s.asInstanceOf[StringLike])
       case CONCAT(appendTo, append) =>
-        StringFunc.CONCAT(
+        BuildInFunc.CONCAT(
           appendTo.asInstanceOf[StringLike],
           append.asInstanceOf[StringLike]
         )
-      case STR(s) => StringFunc.STR(s.asInstanceOf[StringLike])
+      case STR(s) => BuildInFunc.STR(s.asInstanceOf[StringLike])
       case STRAFTER(s, f) =>
-        StringFunc.STRAFTER(
+        BuildInFunc.STRAFTER(
           s.asInstanceOf[StringLike],
           f.asInstanceOf[StringLike]
         )
-      case ISBLANK(s) => StringFunc.ISBLANK(s.asInstanceOf[StringLike])
+      case ISBLANK(s) => BuildInFunc.ISBLANK(s.asInstanceOf[StringLike])
       case REPLACE(st, pattern, by) =>
-        StringFunc.REPLACE(
+        BuildInFunc.REPLACE(
           st.asInstanceOf[StringLike],
           pattern.asInstanceOf[StringLike],
           by.asInstanceOf[StringLike]
