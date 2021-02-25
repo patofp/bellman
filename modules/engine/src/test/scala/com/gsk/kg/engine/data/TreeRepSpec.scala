@@ -36,7 +36,7 @@ class TreeRepSpec extends AnyFlatSpec with Matchers {
           )
         )
       )
-    ).drawTree shouldEqual """
+    ).drawTree.trim shouldEqual """
 1
 |
 +- 2
@@ -49,8 +49,7 @@ class TreeRepSpec extends AnyFlatSpec with Matchers {
 |
 `- 4
    |
-   `- 7
-""".trim()
+   `- 7""".trim()
 
   }
 
