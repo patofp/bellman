@@ -250,6 +250,93 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     Compiler.compile(inputDF, query).right.get.collect.toSet shouldEqual outputDF.collect().toSet
   }
 
+  it should "query a real DF with limit greater than 0 and obtain a correct result" in {
+    import sqlContext.implicits._
+
+    val df: DataFrame = List(
+      ("a", "b", "c"),
+      ("team", "<http://xmlns.com/foaf/0.1/name>", "Anthony"),
+      ("team", "<http://xmlns.com/foaf/0.1/name>", "Perico"),
+      ("team", "<http://xmlns.com/foaf/0.1/name>", "Henry")
+    ).toDF("s", "p", "o")
+
+    val query =
+      """
+        |PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+        |
+        |SELECT  ?name
+        |WHERE   { ?x foaf:name ?name }
+        |LIMIT   2
+        |""".stripMargin
+
+    val result = Compiler.compile(df, query)
+
+    result shouldBe a[Right[_, _]]
+    result.right.get.collect.length shouldEqual 2
+    result.right.get.collect.toSet shouldEqual Set(Row("Anthony"), Row("Perico"))
+  }
+
+  it should "query a real DF with limit equal to 0 and obtain no results" in {
+    import sqlContext.implicits._
+
+    val df: DataFrame = List(
+      ("a", "b", "c"),
+      ("team", "<http://xmlns.com/foaf/0.1/name>", "Anthony"),
+      ("team", "<http://xmlns.com/foaf/0.1/name>", "Perico"),
+      ("team", "<http://xmlns.com/foaf/0.1/name>", "Henry")
+    ).toDF("s", "p", "o")
+
+    val query =
+      """
+        |PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+        |
+        |SELECT  ?name
+        |WHERE   { ?x foaf:name ?name }
+        |LIMIT   0
+        |""".stripMargin
+
+    val result = Compiler.compile(df, query)
+
+    result shouldBe a[Right[_, _]]
+    result.right.get.collect.length shouldEqual 0
+    result.right.get.collect.toSet shouldEqual Set.empty
+  }
+
+  it should "query a real DF with limit greater than Java MAX INTEGER and obtain an error" in {
+    import sqlContext.implicits._
+
+    val df: DataFrame = List(
+      ("a", "b", "c"),
+      ("team", "<http://xmlns.com/foaf/0.1/name>", "Anthony"),
+      ("team", "<http://xmlns.com/foaf/0.1/name>", "Perico"),
+      ("team", "<http://xmlns.com/foaf/0.1/name>", "Henry")
+    ).toDF("s", "p", "o")
+
+    val query =
+      """
+        |PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+        |
+        |SELECT  ?name
+        |WHERE   { ?x foaf:name ?name }
+        |LIMIT   2147483648
+        |""".stripMargin
+
+    val result = Compiler.compile(df, query)
+
+    result shouldBe a[Left[_, _]]
+    result.left.get shouldEqual EngineError.NumericTypesDoNotMatch("2147483648 to big to be converted to an Int")
+  }
+
+  it should "query a real DF with offset greater than 0 and obtain a correct result" ignore {}
+
+  it should "query a real DF with offset equal to 0 and obtain same result as with no offset" ignore {}
+
+  it should "query a real DF with offset less tha 0 and obtain an error" ignore {}
+
+  it should "query a real DF with correct limit and correct offset and obtain a correct result" ignore {}
+
+  it should "query a real DF with wrong limit and wrong offset and obtain the expected errors" ignore {}
+
   private def readNTtoDF(path: String) = {
     import sqlContext.implicits._
     import scala.collection.JavaConverters._
